@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#064e3b"/>
+  <circle cx="256" cy="256" r="190" fill="#047857" opacity="0.4"/>
+  <path d="M256 110 C200 180 180 260 210 350 C240 330 270 290 280 250 C300 290 330 330 360 350 C380 260 360 180 256 110 Z" fill="#34d399"/>
+  <path d="M256 140 L256 380" stroke="#ecfdf5" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="256" cy="220" r="28" fill="#f59e0b"/>
+  <text x="256" y="228" font-family="sans-serif" font-weight="900" font-size="24" fill="#78350f" text-anchor="middle">ج.م</text>
+</svg>

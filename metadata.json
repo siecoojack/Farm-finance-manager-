@@ -1,0 +1,6 @@
+{
+  "name": "إدارة مالية لمزرعة - Farm Financial Management",
+  "description": "تطبيق متكامل للإدارة المالية للمزارع: إدارة الموظفين والإعدادات، اليومية العامة للمصاريف، دفاتر الأستاذ، واستخراج تقارير تسوية العهدة الشهرية مع دعم استيراد وتصدير أكسيل والمشاركة والطباعة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

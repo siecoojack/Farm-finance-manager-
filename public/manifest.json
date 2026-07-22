@@ -1,0 +1,40 @@
+{
+  "id": "farm-financial-pwa",
+  "short_name": "المزرعة المالية",
+  "name": "تطبيق الإدارة المالية للمزرعة",
+  "description": "تطبيق إدارة العهد والمصروفات واليومية العامة للمزرعة",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#064e3b",
+  "display": "standalone",
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "categories": ["finance", "business"]
+}
