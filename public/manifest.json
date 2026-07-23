@@ -1,5 +1,5 @@
 {
-  "id": "farm-financial-pwa",
+  "id": "/",
   "short_name": "المزرعة المالية",
   "name": "تطبيق الإدارة المالية للمزرعة",
   "description": "تطبيق إدارة العهد والمصروفات واليومية العامة للدفاتر المالية والمزارع",
@@ -22,25 +22,25 @@
   ],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
+      "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -48,15 +48,15 @@
   ],
   "screenshots": [
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
       "label": "الشاشة الرئيسية لبرنامج إدارة المزرعة المالية"
     },
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
+      "src": "screenshot-narrow.png",
+      "sizes": "540x960",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "واجهة الهاتف الذكي لبرنامج المزرعة المالية"
@@ -70,8 +70,9 @@
       "url": "/",
       "icons": [
         {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }
