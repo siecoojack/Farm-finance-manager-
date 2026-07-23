@@ -2,7 +2,24 @@
   "id": "farm-financial-pwa",
   "short_name": "المزرعة المالية",
   "name": "تطبيق الإدارة المالية للمزرعة",
-  "description": "تطبيق إدارة العهد والمصروفات واليومية العامة للمزرعة",
+  "description": "تطبيق إدارة العهد والمصروفات واليومية العامة للدفاتر المالية والمزارع",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#064e3b",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "categories": [
+    "finance",
+    "business",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -29,12 +46,35 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
-  "scope": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#064e3b",
-  "display": "standalone",
-  "orientation": "portrait",
-  "prefer_related_applications": false,
-  "categories": ["finance", "business"]
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "الشاشة الرئيسية لبرنامج إدارة المزرعة المالية"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "واجهة الهاتف الذكي لبرنامج المزرعة المالية"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "اليومية العامة",
+      "short_name": "اليومية",
+      "description": "الانتقال المباشر لجدول اليومية العامة",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
 }
