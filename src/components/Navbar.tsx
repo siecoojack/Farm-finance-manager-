@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   BookOpen, 
@@ -13,7 +13,9 @@ import {
   Download, 
   Plus, 
   Calendar,
-  Sparkles
+  Sparkles,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { AppState } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -33,6 +35,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenShare,
   onPrint
 }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFs = () => {
+      setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFs);
+    return () => document.removeEventListener('fullscreenchange', handleFs);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  };
 
   const monthsList = [
     '2026-07', '2026-06', '2026-05', '2026-04', '2026-03', '2026-02', '2026-01'
@@ -83,9 +102,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-600 p-2.5 rounded-xl shadow-md flex items-center justify-center text-emerald-100">
-              <FileSpreadsheet className="w-7 h-7" />
-            </div>
+            <img 
+              src="/icon-192.png" 
+              alt="أيقونة مزرعة الدواجن" 
+              className="w-11 h-11 rounded-xl shadow-md border border-emerald-400/40 object-cover bg-emerald-950" 
+            />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold tracking-tight text-emerald-50">النظام المالي لإدارة المزرعة</h1>
@@ -126,6 +147,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5">
               <PWAInstallButton />
+
+              <button
+                onClick={toggleFullscreen}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
+                  isFullscreen ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-emerald-800 hover:bg-emerald-700 text-emerald-200'
+                }`}
+                title={isFullscreen ? 'الخروج من الشاشة الكاملة' : 'ملء الشاشة وإخفاء أزرار أندرويد'}
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                <span className="hidden lg:inline">{isFullscreen ? 'شاشة عادية' : 'ملء الشاشة'}</span>
+              </button>
 
               <button
                 onClick={onExportExcel}

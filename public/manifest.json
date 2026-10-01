@@ -11,6 +11,7 @@
   "theme_color": "#064e3b",
   "display": "standalone",
   "display_override": [
+    "fullscreen",
     "standalone",
     "minimal-ui"
   ],

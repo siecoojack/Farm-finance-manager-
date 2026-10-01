@@ -279,37 +279,37 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
             <div className="flex items-start gap-3">
               <img 
                 src="/icon-512.png" 
-                alt="أيقونة المزرعة" 
-                className="w-16 h-16 rounded-2xl shadow-md border-2 border-emerald-600 shrink-0 object-cover bg-emerald-900" 
+                alt="أيقونة مزرعة دواجن الأمهات" 
+                className="w-20 h-20 rounded-2xl shadow-md border-2 border-emerald-600 shrink-0 object-cover bg-emerald-950" 
               />
               <div className="space-y-1">
-                <h4 className="font-bold text-slate-800 text-xs sm:text-sm">أيقونة التطبيق الرسمية للمزرعة (512×512)</h4>
+                <h4 className="font-bold text-slate-800 text-xs sm:text-sm">أيقونة مزرعة دواجن الأمهات الرسمية (512×512)</h4>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  بدلاً من أيقونة النجمة الزرقاء الافتراضية في WebIntoApp، حمّل هذه الأيقونة المجهزة رسمياً واخترها في خطوة <strong>Upload My Icon</strong>.
+                  تصميم مخصص لمزرعة دواجن أمهات (دجاجة بنية وديك أبيض بعرف أحمر مع أعمدة بيانية وسهم نمو صاعد). حمّل هذه الأيقونة المجهزة رسمياً واخترها في خطوة <strong>Upload My Icon</strong> في WebIntoApp لتظهر كأيقونة التطبيق على شاشة هاتفك.
                 </p>
               </div>
             </div>
 
             <button
               onClick={handleDownloadAppIcon}
-              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-95"
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-95"
             >
               <Download className="w-4 h-4" />
-              <span>تحميل أيقونة المزرعة لهاتفك (PNG)</span>
+              <span>تحميل أيقونة مزرعة الدواجن لهاتفك (PNG)</span>
             </button>
           </div>
 
-          {/* Card 2: Bottom Navigation Bar Lift for Android 3-Button Nav */}
+          {/* Card 2: Bottom Navigation Bar Lift & Immersive Auto-Hide */}
           <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 flex flex-col justify-between gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <h4 className="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
                   <SlidersVertical className="w-4 h-4 text-emerald-700" />
-                  ارتفاع شريط التمرير السفلي (لحماية أزرار أندرويد)
+                  التحكم بأزرار أندرويد (إخفاء تلقائي / رفع الشريط)
                 </h4>
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
-                يمنع تداخل أزرار أندرويد (المثلث، الدائرة، المربع) مع تبويبات التطبيق لكي لا تُضغط بالخطأ.
+                لجعل أزرار أندرويد تختفي تلقائياً ولا تظهر إلا عند السحب لأعلى، اضغط على زر <strong>ملء الشاشة</strong> في الشريط العلوي أو السفلي. وفي WebIntoApp، فعّل خيار <strong>Full Screen Mode</strong>.
               </p>
 
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
@@ -355,7 +355,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
             </div>
 
             <p className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-              ✓ تم تفعيل الارتفاع المناسب تلقائياً لحفظ مسافة آمنة تمنع لمس أزرار أندرويد السفلية.
+              💡 نصيحة: وضع ملء الشاشة يُخفي أزرار أندرويد تلقائياً تماماً ولا تظهر إلا عند السحب من الأسفل لأعلى!
             </p>
           </div>
 

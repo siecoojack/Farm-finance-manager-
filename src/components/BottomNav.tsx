@@ -7,8 +7,10 @@ import {
   Settings, 
   Sparkles,
   SlidersVertical,
-  ChevronUp,
-  Check
+  Maximize2,
+  Minimize2,
+  Check,
+  EyeOff
 } from 'lucide-react';
 import { AppState } from '../types';
 
@@ -24,6 +26,42 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
     return (localStorage.getItem('farm_bottom_lift') as any) || 'elevated';
   });
   const [showLiftControl, setShowLiftControl] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Monitor fullscreen state
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+        const el = document.documentElement as any;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        }
+      } else {
+        const doc = document as any;
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.log('Fullscreen error:', err);
+    }
+  };
 
   const handleSetLift = (level: 'elevated' | 'high' | 'compact') => {
     setLiftLevel(level);
@@ -44,6 +82,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
   }, []);
 
   const getPaddingBottom = () => {
+    // If fullscreen is active, Android automatically hides system navigation buttons
+    if (isFullscreen) {
+      return 'calc(env(safe-area-inset-bottom, 0px) + 12px)';
+    }
+
     switch (liftLevel) {
       case 'high':
         return 'calc(env(safe-area-inset-bottom, 0px) + 64px)';
@@ -64,7 +107,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
             <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
               <SlidersVertical className="w-3.5 h-3.5" />
-              ضبط ارتفاع الشريط لأزرار الأندرويد
+              التحكم بأزرار أندرويد وشريط التطبيق
             </span>
             <button 
               onClick={() => setShowLiftControl(false)}
@@ -73,9 +116,44 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
               إغلاق
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
-            إذا كانت أزرار أندرويد السفلية (المثلث، الدائرة، المربع) تغطي شريط التطبيق، اختر الارتفاع المناسب لهاتفك:
+
+          {/* Option 1: Immersive Fullscreen Mode */}
+          <div className="mb-3 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between gap-2">
+            <div>
+              <span className="block text-xs font-bold text-white flex items-center gap-1.5">
+                <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                إخفاء أزرار أندرويد تلقائياً
+              </span>
+              <span className="block text-[10px] text-slate-400">
+                (تظهر فقط عند السحب لأعلى من الأسفل)
+              </span>
+            </div>
+            <button
+              onClick={toggleFullscreen}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                isFullscreen 
+                  ? 'bg-amber-500 text-slate-950 shadow' 
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow'
+              }`}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5" />
+                  <span>مُفعل</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>تفعيل</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <p className="text-[11px] text-slate-400 mb-2 leading-relaxed">
+            أو اختر ارتفاع شريط التطبيق لتجاوز أزرار الهاتف:
           </p>
+
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <button
               onClick={() => handleSetLift('compact')}
@@ -206,15 +284,28 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
             </button>
           </div>
 
-          {/* Quick Lift Adjuster Trigger */}
-          <button
-            onClick={() => setShowLiftControl(prev => !prev)}
-            title="تعديل ارتفاع شريط أندرويد"
-            className="text-slate-500 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-900 transition shrink-0 hidden xs:flex flex-col items-center"
-          >
-            <SlidersVertical className="w-3.5 h-3.5" />
-            <span className="text-[8px] text-slate-500">رفع</span>
-          </button>
+          {/* Quick Controls: Fullscreen / Lift Adjuster */}
+          <div className="flex items-center gap-0.5 shrink-0 pr-1 border-r border-slate-800">
+            <button
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'الخروج من الشاشة الكاملة' : 'إخفاء أزرار أندرويد (ملء الشاشة)'}
+              className={`p-1.5 rounded-lg transition flex flex-col items-center ${
+                isFullscreen ? 'text-amber-400 bg-amber-950/60' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-900'
+              }`}
+            >
+              {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span className="text-[8px] leading-none mt-0.5">{isFullscreen ? 'إظهار' : 'إخفاء'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowLiftControl(prev => !prev)}
+              title="تعديل ارتفاع شريط أندرويد"
+              className="text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-900 transition flex flex-col items-center"
+            >
+              <SlidersVertical className="w-3.5 h-3.5" />
+              <span className="text-[8px] leading-none mt-0.5">ضبط</span>
+            </button>
+          </div>
 
         </div>
       </nav>
