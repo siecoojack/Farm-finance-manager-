@@ -9,6 +9,7 @@ import { SettingsTab } from './components/tabs/SettingsTab';
 import { ImportExportTab } from './components/tabs/ImportExportTab';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { ShareModal } from './components/modals/ShareModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { AppState, JournalEntry } from './types';
 import { loadAppState, saveAppState } from './utils/storage';
 import { exportFarmToExcel } from './utils/excel';
@@ -119,6 +120,9 @@ export default function App() {
           onClose={() => setShowShareModal(false)}
         />
       )}
+
+      {/* Offline Status Indicator */}
+      <OfflineIndicator />
 
     </div>
   );

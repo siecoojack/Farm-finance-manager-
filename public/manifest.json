@@ -1,18 +1,19 @@
 {
   "id": "/",
-  "short_name": "المزرعة المالية",
+  "short_name": "المزرعة",
   "name": "تطبيق الإدارة المالية للمزرعة",
-  "description": "تطبيق إدارة العهد والمصروفات واليومية العامة للدفاتر المالية والمزارع",
+  "description": "تطبيق متكامل للإدارة المالية للمزارع وإدارة المصاريف والعهد ودفاتر الأستاذ",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
   "scope": "/",
-  "background_color": "#0f172a",
+  "background_color": "#064e3b",
   "theme_color": "#064e3b",
   "display": "standalone",
   "display_override": [
     "standalone",
-    "minimal-ui"
+    "minimal-ui",
+    "window-controls-overlay"
   ],
   "orientation": "portrait-primary",
   "categories": [
@@ -22,25 +23,25 @@
   ],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -48,14 +49,14 @@
   ],
   "screenshots": [
     {
-      "src": "screenshot-wide.png",
+      "src": "/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
       "label": "الشاشة الرئيسية لبرنامج إدارة المزرعة المالية"
     },
     {
-      "src": "screenshot-narrow.png",
+      "src": "/screenshot-narrow.png",
       "sizes": "540x960",
       "type": "image/png",
       "form_factor": "narrow",
@@ -70,7 +71,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "icon-192.png",
+          "src": "/icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }

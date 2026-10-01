@@ -16,6 +16,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { AppState } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   state: AppState;
@@ -124,6 +125,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5">
+              <PWAInstallButton />
+
               <button
                 onClick={onExportExcel}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow transition"
