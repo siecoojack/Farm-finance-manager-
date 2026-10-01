@@ -80,7 +80,7 @@ export default function App() {
         />
 
         {/* Main Content Body */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-24">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-40 sm:pb-28">
           {renderActiveTabContent()}
         </main>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Plus, Trash2, Shield, Settings, CheckCircle2, X } from 'lucide-react';
+import { Layers, Plus, Trash2, Shield, Settings, CheckCircle2, X, Smartphone, Download, SlidersVertical, Image as ImageIcon } from 'lucide-react';
 import { AppState, DropdownOption } from '../../types';
 
 interface SettingsTabProps {
@@ -14,6 +14,26 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
   const [drpName, setDrpName] = useState('');
   const [drpDescription, setDrpDescription] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'sector' | 'category' | 'payment_method' | 'custodian'>('ALL');
+
+  // Bottom Navigation Lift State for Android 3-Button Navigation
+  const [bottomLift, setBottomLift] = useState<'compact' | 'elevated' | 'high'>(() => {
+    return (localStorage.getItem('farm_bottom_lift') as any) || 'elevated';
+  });
+
+  const handleUpdateBottomLift = (val: 'compact' | 'elevated' | 'high') => {
+    setBottomLift(val);
+    localStorage.setItem('farm_bottom_lift', val);
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleDownloadAppIcon = () => {
+    const link = document.createElement('a');
+    link.href = '/icon-512.png';
+    link.download = 'farm-app-icon.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Add Dropdown Item
   const handleAddDropdown = (e: React.FormEvent) => {
@@ -235,6 +255,108 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
                 </div>
               ))}
             </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Android APK, Official App Icon & Navigation Lift Settings */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-emerald-900 font-bold text-base">
+            <Smartphone className="w-5 h-5 text-emerald-700" />
+            <h3>إعدادات تطبيق الأندرويد واستخراج الـ APK وحل مشكلة أزرار الهاتف</h3>
+          </div>
+          <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-bold">
+            Android Support
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Card 1: Official App Icon for WebIntoApp */}
+          <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 flex flex-col justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <img 
+                src="/icon-512.png" 
+                alt="أيقونة المزرعة" 
+                className="w-16 h-16 rounded-2xl shadow-md border-2 border-emerald-600 shrink-0 object-cover bg-emerald-900" 
+              />
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-800 text-xs sm:text-sm">أيقونة التطبيق الرسمية للمزرعة (512×512)</h4>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  بدلاً من أيقونة النجمة الزرقاء الافتراضية في WebIntoApp، حمّل هذه الأيقونة المجهزة رسمياً واخترها في خطوة <strong>Upload My Icon</strong>.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleDownloadAppIcon}
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              <span>تحميل أيقونة المزرعة لهاتفك (PNG)</span>
+            </button>
+          </div>
+
+          {/* Card 2: Bottom Navigation Bar Lift for Android 3-Button Nav */}
+          <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 flex flex-col justify-between gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <h4 className="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                  <SlidersVertical className="w-4 h-4 text-emerald-700" />
+                  ارتفاع شريط التمرير السفلي (لحماية أزرار أندرويد)
+                </h4>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
+                يمنع تداخل أزرار أندرويد (المثلث، الدائرة، المربع) مع تبويبات التطبيق لكي لا تُضغط بالخطأ.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleUpdateBottomLift('compact')}
+                  className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 transition ${
+                    bottomLift === 'compact'
+                      ? 'border-emerald-600 bg-emerald-100 text-emerald-900 font-bold'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>عادي</span>
+                  <span className="text-[10px] text-slate-400">لشاشات اللمس</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpdateBottomLift('elevated')}
+                  className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 transition ${
+                    bottomLift === 'elevated'
+                      ? 'border-emerald-600 bg-emerald-100 text-emerald-900 font-bold shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>مرتفع (48px)</span>
+                  <span className="text-[10px] text-emerald-700 font-bold">موصى به للأزرار</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpdateBottomLift('high')}
+                  className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 transition ${
+                    bottomLift === 'high'
+                      ? 'border-emerald-600 bg-emerald-100 text-emerald-900 font-bold'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>مرتفع جداً (64px)</span>
+                  <span className="text-[10px] text-slate-400">شاشات كبيرة</span>
+                </button>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+              ✓ تم تفعيل الارتفاع المناسب تلقائياً لحفظ مسافة آمنة تمنع لمس أزرار أندرويد السفلية.
+            </p>
           </div>
 
         </div>
