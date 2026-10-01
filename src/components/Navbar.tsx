@@ -5,6 +5,7 @@ import {
   ReceiptText, 
   FileText, 
   Settings, 
+  Users,
   Smartphone, 
   Monitor, 
   Share2, 
@@ -121,32 +122,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
-            {/* View Mode Switcher (Desktop vs Mobile Device) */}
-            <div className="bg-emerald-950/60 p-1 rounded-lg border border-emerald-800 flex items-center gap-1 text-xs">
-              <button
-                onClick={() => setState(prev => ({ ...prev, viewMode: 'desktop' }))}
-                className={`px-2.5 py-1 rounded flex items-center gap-1 transition ${
-                  state.viewMode === 'desktop'
-                    ? 'bg-emerald-600 text-white font-bold shadow-sm'
-                    : 'text-emerald-300 hover:text-white'
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">سطح المكتب</span>
-              </button>
-              <button
-                onClick={() => setState(prev => ({ ...prev, viewMode: 'android' }))}
-                className={`px-2.5 py-1 rounded flex items-center gap-1 transition ${
-                  state.viewMode === 'android'
-                    ? 'bg-emerald-600 text-white font-bold shadow-sm'
-                    : 'text-emerald-300 hover:text-white'
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>واجهة أندرويد</span>
-              </button>
-            </div>
-
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5">
               <button
@@ -155,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="تصدير ملف أكسيل كاملاً"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden md:inline">تصدير أكسيل</span>
+                <span>تصدير أكسيل</span>
               </button>
 
               <button
@@ -164,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="مشاركة عبر الواتساب والإيميل"
               >
                 <Share2 className="w-4 h-4" />
-                <span className="hidden md:inline">مشاركة</span>
+                <span>مشاركة</span>
               </button>
 
               <button
@@ -173,21 +148,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="طباعة التقرير"
               >
                 <Printer className="w-4 h-4" />
-                <span className="hidden lg:inline">طباعة</span>
+                <span className="hidden sm:inline">طباعة</span>
               </button>
             </div>
 
           </div>
         </div>
 
-        {/* Navigation Tabs Bar */}
-        <nav className="mt-4 flex space-x-1 space-x-reverse border-t border-emerald-800/80 pt-2 overflow-x-auto no-scrollbar">
+        {/* Navigation Horizontal Scrolling Tabs Bar */}
+        <nav className="mt-3 flex space-x-1.5 space-x-reverse border-t border-emerald-800/80 pt-2.5 overflow-x-auto no-scrollbar scroll-smooth">
           <button
             onClick={() => setState(prev => ({ ...prev, activeTab: 'journal' }))}
-            className={`px-4 py-2 text-xs font-bold rounded-t-lg flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
               state.activeTab === 'journal'
-                ? 'bg-emerald-800 text-emerald-100 border-emerald-400 shadow-sm'
-                : 'text-emerald-300 hover:text-white hover:bg-emerald-800/40 border-transparent'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
             }`}
           >
             <ReceiptText className="w-4 h-4" />
@@ -196,10 +171,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setState(prev => ({ ...prev, activeTab: 'ledger' }))}
-            className={`px-4 py-2 text-xs font-bold rounded-t-lg flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
               state.activeTab === 'ledger'
-                ? 'bg-emerald-800 text-emerald-100 border-emerald-400 shadow-sm'
-                : 'text-emerald-300 hover:text-white hover:bg-emerald-800/40 border-transparent'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
             }`}
           >
             <BookOpen className="w-4 h-4" />
@@ -208,38 +183,50 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setState(prev => ({ ...prev, activeTab: 'settlement' }))}
-            className={`px-4 py-2 text-xs font-bold rounded-t-lg flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
               state.activeTab === 'settlement'
-                ? 'bg-emerald-800 text-emerald-100 border-emerald-400 shadow-sm'
-                : 'text-emerald-300 hover:text-white hover:bg-emerald-800/40 border-transparent'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>تسوية العهدة للمكتب الرئيسي</span>
+            <span>تسوية العهدة الشهرية</span>
+          </button>
+
+          <button
+            onClick={() => setState(prev => ({ ...prev, activeTab: 'employees' }))}
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
+              state.activeTab === 'employees'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>الموظفون والرواتب</span>
           </button>
 
           <button
             onClick={() => setState(prev => ({ ...prev, activeTab: 'settings' }))}
-            className={`px-4 py-2 text-xs font-bold rounded-t-lg flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
               state.activeTab === 'settings'
-                ? 'bg-emerald-800 text-emerald-100 border-emerald-400 shadow-sm'
-                : 'text-emerald-300 hover:text-white hover:bg-emerald-800/40 border-transparent'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>الموظفون والإعدادات</span>
+            <span>الإعدادات وجداول القوائم</span>
           </button>
 
           <button
             onClick={() => setState(prev => ({ ...prev, activeTab: 'import_export' }))}
-            className={`px-4 py-2 text-xs font-bold rounded-t-lg flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
               state.activeTab === 'import_export'
-                ? 'bg-emerald-800 text-emerald-100 border-emerald-400 shadow-sm'
-                : 'text-emerald-300 hover:text-white hover:bg-emerald-800/40 border-transparent'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
             }`}
           >
             <Sparkles className="w-4 h-4 text-emerald-300" />
-            <span>استيراد أكسيل والمشاركة</span>
+            <span>تصدير واستيراد أكسيل</span>
           </button>
         </nav>
 

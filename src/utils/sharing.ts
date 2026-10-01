@@ -36,16 +36,56 @@ _تم الإرسال عبر نظام الإدارة المالية للمزرع�
 }
 
 /**
- * Opens WhatsApp share with encoded text
+ * Copies text to clipboard safely with fallback for older WebViews / HTTP
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback below
+    }
+  }
+
+  // Fallback using textarea execCommand
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const success = document.execCommand('copy');
+    textArea.remove();
+    return success;
+  } catch (err) {
+    console.warn('Clipboard copy failed:', err);
+    return false;
+  }
+}
+
+/**
+ * Opens WhatsApp share with encoded text safely across Web and WebViews
  */
 export function shareViaWhatsApp(messageText: string, phoneNumber?: string) {
   const encoded = encodeURIComponent(messageText);
-  let url = `https://wa.me/?text=${encoded}`;
+  let url = `https://api.whatsapp.com/send?text=${encoded}`;
   if (phoneNumber && phoneNumber.trim().length > 5) {
     const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
-    url = `https://wa.me/${cleanPhone}?text=${encoded}`;
+    url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`;
   }
-  window.open(url, '_blank', 'noopener,noreferrer');
+
+  // Safely trigger navigation without window.open popup blocking
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 /**
@@ -59,13 +99,14 @@ export function shareViaEmail(subject: string, bodyText: string) {
 /**
  * Triggers Browser Web Share API if supported
  */
-export async function shareViaWebShareAPI(title: string, text: string) {
-  if (navigator.share) {
+export async function shareViaWebShareAPI(title: string, text: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       await navigator.share({ title, text });
       return true;
     } catch (err) {
-      console.log('Share canceled or failed', err);
+      console.log('Share canceled or not completed:', err);
+      return false;
     }
   }
   return false;

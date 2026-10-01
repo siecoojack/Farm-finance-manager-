@@ -60,6 +60,7 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
   const [openingBalance, setOpeningBalance] = useState<number>(openingBal);
   const [reportStatus, setReportStatus] = useState<any>(settlement.status || 'مسودة');
   const [reportNotes, setReportNotes] = useState<string>(settlement.notes || '');
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   // Category breakdown for percentage visualizer
   const categoryMap: Record<string, number> = {};
@@ -98,7 +99,8 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
       }
     }));
 
-    alert('تم حفظ كشف تسوية العهدة بنجاح.');
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   const handleWhatsApp = () => {
@@ -166,6 +168,11 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {saveSuccess && (
+            <span className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-lg font-bold border border-emerald-300 animate-pulse">
+              ✓ تم حفظ الكشف بنجاح
+            </span>
+          )}
           <button
             onClick={handleSaveSettlement}
             className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"

@@ -55,7 +55,7 @@ export interface AppState {
   journalEntries: JournalEntry[];
   settlements: Record<string, MonthlySettlement>; // key is monthKey
   viewMode: 'desktop' | 'android';
-  activeTab: 'journal' | 'ledger' | 'settlement' | 'settings' | 'import_export';
+  activeTab: 'journal' | 'ledger' | 'settlement' | 'employees' | 'settings' | 'import_export';
 }
 
 export interface ExcelSheetImportData {

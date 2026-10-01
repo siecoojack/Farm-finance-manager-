@@ -32,6 +32,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
   // Form State
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [voucherNo, setVoucherNo] = useState(`V-${String(currentMonthEntries.length + 1).padStart(3, '0')}`);
@@ -80,9 +81,10 @@ export const JournalTab: React.FC<JournalTabProps> = ({
   const handleSaveEntry = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || Number(amount) <= 0 || !statement.trim()) {
-      alert('يرجى إدخال المبلغ والبيان بشكل صحيح.');
+      setFormError('يرجى إدخال المبلغ وقيمة البيان بشكل صحيح.');
       return;
     }
+    setFormError(null);
 
     const selectedEmp = state.employees.find(emp => emp.id === employeeId);
 
@@ -258,6 +260,13 @@ export const JournalTab: React.FC<JournalTabProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
+
+          {formError && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
             

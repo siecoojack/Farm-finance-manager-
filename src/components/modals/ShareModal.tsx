@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, MessageSquare, Mail, Share2, Printer, Check, Copy } from 'lucide-react';
+import { X, MessageSquare, Mail, Share2, Printer, Check, Copy, Send } from 'lucide-react';
 import { AppState } from '../../types';
-import { buildWhatsAppReportMessage, shareViaWhatsApp, shareViaEmail, triggerPrintReport } from '../../utils/sharing';
+import { buildWhatsAppReportMessage, shareViaWhatsApp, shareViaEmail, triggerPrintReport, copyToClipboard, shareViaWebShareAPI } from '../../utils/sharing';
 
 interface ShareModalProps {
   state: AppState;
@@ -17,14 +17,24 @@ export const ShareModal: React.FC<ShareModalProps> = ({ state, onClose }) => {
 
   const reportText = buildWhatsAppReportMessage(state.currentMonth, currentSettlement, monthEntries.length);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(reportText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    const success = await copyToClipboard(reportText);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const handleWhatsApp = () => {
     shareViaWhatsApp(reportText, phone);
+  };
+
+  const handleNativeShare = async () => {
+    const shared = await shareViaWebShareAPI(`تقرير مالية المزرعة - ${state.currentMonth}`, reportText);
+    if (!shared) {
+      // Fallback to WhatsApp
+      handleWhatsApp();
+    }
   };
 
   const handleEmail = () => {
@@ -55,10 +65,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({ state, onClose }) => {
 
         {/* Phone Input */}
         <div className="space-y-1">
-          <label className="block text-xs font-bold text-slate-700">رقم الهاتف لإرسال الواتس اب مباشر (اختياري):</label>
+          <label className="block text-xs font-bold text-slate-700">رقم الهاتف لإرسال الواتساب مباشرة (اختياري مع كود الدولة):</label>
           <input
             type="text"
-            placeholder="مثال: 0501234567"
+            placeholder="مثال: +201012345678 أو 01012345678"
             value={phone}
             onChange={e => setPhone(e.target.value)}
             className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-mono"
@@ -66,13 +76,21 @@ export const ShareModal: React.FC<ShareModalProps> = ({ state, onClose }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+        <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+          <button
+            onClick={handleNativeShare}
+            className="col-span-2 bg-emerald-700 hover:bg-emerald-800 text-white p-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow transition"
+          >
+            <Send className="w-4 h-4" />
+            <span>مشاركة سريعة عبر تطبيقات الهاتف (واتساب / تليجرام)</span>
+          </button>
+
           <button
             onClick={handleWhatsApp}
             className="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow transition"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>إرسال واتساب</span>
+            <span>إرسال عبر واتساب</span>
           </button>
 
           <button
@@ -88,7 +106,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ state, onClose }) => {
             className="bg-slate-100 hover:bg-slate-200 text-slate-800 p-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'تم النسخ!' : 'نسخ النص'}</span>
+            <span>{copied ? 'تم النسخ بنجاح!' : 'نسخ النص للحافظة'}</span>
           </button>
 
           <button

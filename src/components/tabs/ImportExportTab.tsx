@@ -27,7 +27,10 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
 
   const [uploading, setUploading] = useState(false);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,6 +38,7 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
 
     setUploading(true);
     setImportSuccess(null);
+    setImportError(null);
 
     try {
       const parsed = await parseExcelUpload(file);
@@ -62,7 +66,7 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
 
       setImportSuccess(`تم استيراد الملف بنجاح! تم استخراج (${empCount}) موظف، (${jrnCount}) حركة يومية، و (${drpCount}) عناصر إعدادات.`);
     } catch (err) {
-      alert('حدث خطأ أثناء قراءة ملف الأكسيل. يرجى التأكد من أن الملف بصيغة xlsx أو csv سليمة.');
+      setImportError('حدث خطأ أثناء قراءة ملف الأكسيل. يرجى التأكد من أن الملف بصيغة xlsx أو csv سليمة.');
       console.error(err);
     } finally {
       setUploading(false);
@@ -101,16 +105,16 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
     const msg = buildWhatsAppReportMessage(state.currentMonth, currentSettlement, monthEntries.length);
     const shared = await shareViaWebShareAPI(`تقرير المزرعة - ${state.currentMonth}`, msg);
     if (!shared) {
-      alert('ميزة المشاركة المباشرة عبر النظام غير مدعومة بالمتصفح الحالي. يرجى استخدام زر الواتساب أو الإيميل.');
+      handleWhatsAppShare();
     }
   };
 
   const handleResetData = () => {
-    if (confirm('هل أنت متأكد من إعادة ضبط جميع البيانات للقيم الافتراضية الأولية؟ سيفقد أي تعديل غير محفوظ.')) {
-      const reset = resetAppStateToDefaults();
-      setState(reset);
-      alert('تمت إعادة ضبط البيانات بنجاح.');
-    }
+    const reset = resetAppStateToDefaults();
+    setState(reset);
+    setShowResetConfirm(false);
+    setResetSuccess(true);
+    setTimeout(() => setResetSuccess(false), 3000);
   };
 
   return (
@@ -161,6 +165,13 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
           <div className="bg-emerald-100 border border-emerald-300 text-emerald-900 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-emerald-700 shrink-0" />
             <span>{importSuccess}</span>
+          </div>
+        )}
+
+        {importError && (
+          <div className="bg-rose-100 border border-rose-300 text-rose-900 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-rose-700 shrink-0" />
+            <span>{importError}</span>
           </div>
         )}
       </div>
@@ -269,19 +280,43 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
       </div>
 
       {/* RESET SYSTEM DATA */}
-      <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 flex items-center justify-between">
+      <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h4 className="font-bold text-rose-900 text-xs sm:text-sm">إعادة ضبط واستعادة البيانات التجريبية الأولية</h4>
           <p className="text-xs text-rose-700/80 mt-0.5">استعادة جدول الموظفين المسجل والبيانات الافتراضية.</p>
         </div>
-        <button
-          onClick={handleResetData}
-          className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition shrink-0"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>إعادة الضبط</span>
-        </button>
+        {showResetConfirm ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleResetData}
+              className="bg-rose-700 hover:bg-rose-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition"
+            >
+              تأكيد الاستعادة
+            </button>
+            <button
+              onClick={() => setShowResetConfirm(false)}
+              className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition shrink-0"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>إعادة الضبط</span>
+          </button>
+        )}
       </div>
+
+      {resetSuccess && (
+        <div className="bg-emerald-100 border border-emerald-300 text-emerald-900 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+          <CheckCircle className="w-5 h-5 text-emerald-700 shrink-0" />
+          <span>تمت إعادة ضبط واستعادة البيانات الأولية بنجاح!</span>
+        </div>
+      )}
 
     </div>
   );

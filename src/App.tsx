@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { AndroidFrame } from './components/AndroidFrame';
+import { BottomNav } from './components/BottomNav';
 import { JournalTab } from './components/tabs/JournalTab';
 import { LedgerTab } from './components/tabs/LedgerTab';
 import { MonthlySettlementTab } from './components/tabs/MonthlySettlementTab';
+import { EmployeesTab } from './components/tabs/EmployeesTab';
 import { SettingsTab } from './components/tabs/SettingsTab';
 import { ImportExportTab } from './components/tabs/ImportExportTab';
 import { VoucherModal } from './components/modals/VoucherModal';
@@ -47,6 +48,8 @@ export default function App() {
         return <LedgerTab state={state} />;
       case 'settlement':
         return <MonthlySettlementTab state={state} setState={setState} />;
+      case 'employees':
+        return <EmployeesTab state={state} setState={setState} />;
       case 'settings':
         return <SettingsTab state={state} setState={setState} />;
       case 'import_export':
@@ -63,33 +66,32 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-emerald-500 selection:text-white" dir="rtl">
+    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-emerald-500 selection:text-white flex flex-col justify-between" dir="rtl">
       
-      {/* Top Main Navigation Header Bar */}
-      <Navbar
-        state={state}
-        setState={setState}
-        onExportExcel={handleExportExcel}
-        onOpenShare={() => setShowShareModal(true)}
-        onPrint={() => window.print()}
-      />
+      <div>
+        {/* Top Main Navigation Header Bar (With Brand, Month Selector, Quick Actions & Horizontal Scrolling Tabs) */}
+        <Navbar
+          state={state}
+          setState={setState}
+          onExportExcel={handleExportExcel}
+          onOpenShare={() => setShowShareModal(true)}
+          onPrint={() => window.print()}
+        />
 
-      {/* Main Body View (Desktop Full Layout vs Mobile Android Chassis Frame) */}
-      {state.viewMode === 'android' ? (
-        <AndroidFrame
-          activeTab={state.activeTab}
-          onTabChange={(tab) => setState(prev => ({ ...prev, activeTab: tab }))}
-        >
-          {renderActiveTabContent()}
-        </AndroidFrame>
-      ) : (
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16">
+        {/* Main Content Body */}
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-24">
           {renderActiveTabContent()}
         </main>
-      )}
+      </div>
+
+      {/* Persistent Bottom Navigation Bar for Mobile and Fast Switching */}
+      <BottomNav
+        activeTab={state.activeTab}
+        onTabChange={(tab) => setState(prev => ({ ...prev, activeTab: tab }))}
+      />
 
       {/* Footer Banner */}
-      <footer className="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs print:hidden">
+      <footer className="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs print:hidden mb-12 sm:mb-14">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
