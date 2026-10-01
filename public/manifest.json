@@ -12,8 +12,7 @@
   "display": "standalone",
   "display_override": [
     "standalone",
-    "minimal-ui",
-    "window-controls-overlay"
+    "minimal-ui"
   ],
   "orientation": "portrait-primary",
   "categories": [
