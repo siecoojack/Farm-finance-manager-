@@ -19,6 +19,14 @@ async function startServer() {
     res.sendFile(iconPath);
   });
 
+  // Direct download route for offline HTML bundle (for WebIntoApp HTML Files tab)
+  app.get("/api/download-zip", (_req, res) => {
+    const zipPath = path.join(process.cwd(), "public", "farm-app-files.zip");
+    res.setHeader("Content-Disposition", 'attachment; filename="farm-financial-offline.zip"');
+    res.setHeader("Content-Type", "application/zip");
+    res.sendFile(zipPath);
+  });
+
   // Serve static assets or use Vite middleware depending on NODE_ENV
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
