@@ -5,17 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>تطبيق الإدارة المالية للمزرعة</title>
     <meta name="description" content="تطبيق متكامل للإدارة المالية للمزارع: إدارة الموظفين والإعدادات، اليومية العامة للمصاريف، دفاتر الأستاذ، واستخراج تقارير تسوية العهدة الشهرية مع دعم استيراد وتصدير أكسيل والمشاركة والطباعة." />
-    <meta property="og:title" content="تطبيق الإدارة المالية للمزرعة" />
-    <meta property="og:description" content="تطبيق متكامل للإدارة المالية للمزارع: إدارة الموظفين والإعدادات، اليومية العامة للمصاريف، دفاتر الأستاذ، واستخراج تقارير تسوية العهدة الشهرية مع دعم استيراد وتصدير أكسيل والمشاركة والطباعة." />
-    <meta property="og:image" content="/icon-512.png" />
-    <link rel="image_src" href="/icon-512.png" />
     
-    <!-- PWA & Mobile Web App Settings -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <!-- App Icons with absolute and relative URLs for WebIntoApp crawler & PWA -->
+    <link rel="icon" type="image/png" sizes="512x512" href="https://farmfinancial.netlify.app/icon-512.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="https://farmfinancial.netlify.app/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-512.png" />
     <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- OpenGraph & Social Cards (Used by WebIntoApp App Maker) -->
+    <meta property="og:title" content="Farm_Financial" />
+    <meta property="og:description" content="النظام المالي لإدارة المزرعة" />
+    <meta property="og:image" content="https://farmfinancial.netlify.app/icon-512.png" />
+    <meta property="og:image:secure_url" content="https://farmfinancial.netlify.app/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content="https://farmfinancial.netlify.app/icon-512.png" />
+    <meta name="msapplication-TileImage" content="https://farmfinancial.netlify.app/icon-512.png" />
+    <meta name="msapplication-TileColor" content="#064e3b" />
+    <link rel="image_src" href="https://farmfinancial.netlify.app/icon-512.png" />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
     
     <meta name="theme-color" content="#064e3b" />
     <meta name="background-color" content="#064e3b" />
@@ -24,7 +38,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="المزرعة" />
   </head>
-  <body>
+  <body class="bg-slate-50 text-slate-900 select-none overflow-x-hidden antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>

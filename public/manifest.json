@@ -3,80 +3,55 @@
   "short_name": "المزرعة",
   "name": "تطبيق الإدارة المالية للمزرعة",
   "description": "تطبيق متكامل للإدارة المالية للمزارع وإدارة المصاريف والعهد ودفاتر الأستاذ",
-  "lang": "ar",
-  "dir": "rtl",
+  "icons": [
+    {
+      "src": "https://farmfinancial.netlify.app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
   "start_url": "/",
   "scope": "/",
-  "background_color": "#064e3b",
-  "theme_color": "#064e3b",
   "display": "standalone",
   "display_override": [
     "fullscreen",
     "standalone",
     "minimal-ui"
   ],
+  "background_color": "#064e3b",
+  "theme_color": "#064e3b",
   "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
   "categories": [
     "finance",
     "business",
     "productivity"
-  ],
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "الشاشة الرئيسية لبرنامج إدارة المزرعة المالية"
-    },
-    {
-      "src": "/screenshot-narrow.png",
-      "sizes": "540x960",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "واجهة الهاتف الذكي لبرنامج المزرعة المالية"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "اليومية العامة",
-      "short_name": "اليومية",
-      "description": "الانتقال المباشر لجدول اليومية العامة",
-      "url": "/",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
   ],
   "prefer_related_applications": false
 }
