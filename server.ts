@@ -11,6 +11,14 @@ async function startServer() {
     res.json({ status: "ok", app: "Farm Financial Management System" });
   });
 
+  // Direct download route for the poultry farm app icon
+  app.get("/api/icon-download", (_req, res) => {
+    const iconPath = path.join(process.cwd(), "public", "icon-512.png");
+    res.setHeader("Content-Disposition", 'attachment; filename="farm-poultry-icon.png"');
+    res.setHeader("Content-Type", "image/png");
+    res.sendFile(iconPath);
+  });
+
   // Serve static assets or use Vite middleware depending on NODE_ENV
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

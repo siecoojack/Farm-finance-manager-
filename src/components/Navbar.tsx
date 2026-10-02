@@ -36,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onPrint
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   useEffect(() => {
     const handleFs = () => {
@@ -50,6 +51,25 @@ export const Navbar: React.FC<NavbarProps> = ({
       document.documentElement.requestFullscreen?.();
     } else {
       document.exitFullscreen?.();
+    }
+  };
+
+  const handleDownloadIcon = async () => {
+    try {
+      const res = await fetch('/icon-512.png');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'poultry-farm-icon.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch {
+      window.open('/api/icon-download', '_blank');
     }
   };
 
@@ -102,11 +122,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <img 
-              src="/icon-192.png" 
-              alt="أيقونة مزرعة الدواجن" 
-              className="w-11 h-11 rounded-xl shadow-md border border-emerald-400/40 object-cover bg-emerald-950" 
-            />
+            <button
+              onClick={handleDownloadIcon}
+              title="اضغط هنا لتنزيل صورة الأيقونة مباشرة بجودة عالية (PNG)"
+              className="relative group cursor-pointer focus:outline-none transition active:scale-95 shrink-0 text-right"
+            >
+              <img 
+                src="/icon-192.png" 
+                alt="أيقونة مزرعة الدواجن" 
+                className="w-12 h-12 rounded-xl shadow-md border-2 border-emerald-400/80 object-cover bg-emerald-950 group-hover:brightness-110" 
+              />
+              <span className="absolute -bottom-1 -left-1 bg-amber-400 text-slate-950 p-1 rounded-full shadow-md text-[9px] font-bold flex items-center justify-center">
+                <Download className="w-2.5 h-2.5" />
+              </span>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold tracking-tight text-emerald-50">النظام المالي لإدارة المزرعة</h1>
@@ -114,7 +143,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   نسخة الأكسيل المتقدمة
                 </span>
               </div>
-              <p className="text-xs text-emerald-200/80">اليومية العامة • دفاتر الأستاذ • تسوية العهدة للمكتب الرئيسي</p>
+              <div className="flex items-center gap-2 text-xs text-emerald-200/80 mt-0.5">
+                <span>اليومية العامة • دفاتر الأستاذ • تسوية العهدة</span>
+                <button
+                  onClick={handleDownloadIcon}
+                  className="text-amber-300 hover:text-amber-200 underline font-bold text-[11px] flex items-center gap-0.5 transition"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>تنزيل الأيقونة (PNG)</span>
+                </button>
+                {downloadSuccess && (
+                  <span className="text-emerald-300 font-bold bg-emerald-800/90 px-2 py-0.5 rounded text-[10px] animate-pulse">
+                    ✓ تم التنزيل بنجاح!
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
