@@ -73,7 +73,6 @@ export const INITIAL_DROPDOWNS: DropdownOption[] = [
 
   // طرق الدفع (Payment Methods)
   { id: 'pay-1', type: 'payment_method', name: 'نقداً من العهدة النقدية', description: 'صرف مباشر من الخزينة النقدية' },
-  { id: 'pay-6', type: 'payment_method', name: 'دفع نقدي (إيرادات/سيولة)', description: 'استلام نقدي مباشر' },
   { id: 'pay-2', type: 'payment_method', name: 'تحويل بنكي direct bank', description: 'حساب المزرعة البنكي' },
   { id: 'pay-3', type: 'payment_method', name: 'شيك مصرفي', description: 'شيكات المزرعة' },
   { id: 'pay-4', type: 'payment_method', name: 'بطاقة مدى / شبكة', description: 'دفع بالبطاقة' },
