@@ -12,15 +12,16 @@ import { ExpensesTab } from './components/tabs/ExpensesTab';
 import { SalesTab } from './components/tabs/SalesTab';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { ShareModal } from './components/modals/ShareModal';
+import { ExportModal } from './components/modals/ExportModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { AppState, JournalEntry } from './types';
 import { loadAppState, saveAppState } from './utils/storage';
-import { exportOfficialOfficeExcel } from './utils/excel';
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [selectedVoucher, setSelectedVoucher] = useState<JournalEntry | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Auto-save state changes to LocalStorage
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function App() {
   }, [state]);
 
   const handleExportExcel = () => {
-    exportOfficialOfficeExcel(state);
+    setShowExportModal(true);
   };
 
   const renderActiveTabContent = () => {
@@ -120,6 +121,14 @@ export default function App() {
         <ShareModal
           state={state}
           onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {/* Export Excel Modal */}
+      {showExportModal && (
+        <ExportModal
+          state={state}
+          onClose={() => setShowExportModal(false)}
         />
       )}
 

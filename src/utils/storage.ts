@@ -1,14 +1,14 @@
 import { AppState, Employee, DropdownOption, JournalEntry, MonthlySettlement } from '../types';
 import { INITIAL_EMPLOYEES, INITIAL_DROPDOWNS, INITIAL_JOURNAL_ENTRIES, INITIAL_SETTLEMENTS, INITIAL_INVENTORY, CURRENT_MONTH_KEY } from '../data/initialData';
 
-const STORAGE_KEY = 'FARM_FINANCIAL_APP_STATE_V2';
+const STORAGE_KEY = 'FARM_FINANCIAL_APP_STATE_V3';
 
 export function loadAppState(): AppState {
   try {
     let raw = localStorage.getItem(STORAGE_KEY);
-    // Backward compatibility: check V1 if V2 is not yet initialized
+    // Backward compatibility: check V2 then V1
     if (!raw) {
-      raw = localStorage.getItem('FARM_FINANCIAL_APP_STATE_V1');
+      raw = localStorage.getItem('FARM_FINANCIAL_APP_STATE_V2') || localStorage.getItem('FARM_FINANCIAL_APP_STATE_V1');
     }
 
     if (raw) {
@@ -26,14 +26,25 @@ export function loadAppState(): AppState {
           }))
         : INITIAL_EMPLOYEES;
 
+      // Purge any outdated plant/nursery transactions from previous template
+      let loadedJournal: JournalEntry[] = parsed.journalEntries || INITIAL_JOURNAL_ENTRIES;
+      if (Array.isArray(loadedJournal)) {
+        const cleaned = loadedJournal.filter((e: any) => 
+          !e.statement?.includes('ميسي فيرجسون') && 
+          !e.statement?.includes('تسميد النخيل') && 
+          !e.statement?.includes('صانعات الأنفاق')
+        );
+        loadedJournal = cleaned.length > 0 ? cleaned : INITIAL_JOURNAL_ENTRIES;
+      }
+
       return {
         currentMonth: parsed.currentMonth || CURRENT_MONTH_KEY,
         employees: loadedEmployees,
         dropdowns: parsed.dropdowns || INITIAL_DROPDOWNS,
-        journalEntries: parsed.journalEntries || INITIAL_JOURNAL_ENTRIES,
+        journalEntries: loadedJournal,
         salesEntries: parsed.salesEntries || [],
         settlements: parsed.settlements || INITIAL_SETTLEMENTS,
-        inventory: parsed.inventory || INITIAL_INVENTORY,
+        inventory: (parsed.inventory && parsed.inventory.length > 0) ? parsed.inventory : INITIAL_INVENTORY,
         minPettyCashLimit: parsed.minPettyCashLimit || 0,
         officialMiesPerPerson: parsed.officialMiesPerPerson || 1000,
         viewMode: parsed.viewMode || 'desktop',

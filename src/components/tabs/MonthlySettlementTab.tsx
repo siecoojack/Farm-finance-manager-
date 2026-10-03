@@ -16,6 +16,7 @@ import {
 import { AppState } from '../../types';
 import { buildWhatsAppReportMessage, shareViaWhatsApp, shareViaEmail, triggerPrintReport } from '../../utils/sharing';
 import { exportOfficialOfficeExcel, exportFullFarmBackupExcel } from '../../utils/excel';
+import { ExportModal } from '../modals/ExportModal';
 
 interface MonthlySettlementTabProps {
   state: AppState;
@@ -48,6 +49,7 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
   const [reportNotes, setReportNotes] = useState<string>(settlement.notes || '');
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [isOfficialView, setIsOfficialView] = useState<boolean>(true);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Filter entries
   const visibleEntries = isOfficialView 
@@ -226,37 +228,13 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
             <span>إيميل</span>
           </button>
 
-          <div className="relative group">
-            <button
-              onClick={() => exportOfficialOfficeExcel(state)}
-              className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
-            >
-              <Download className="w-4 h-4" />
-              <span>تصدير أكسيل</span>
-            </button>
-            <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 w-60 z-20 hidden group-hover:block text-right">
-               <button
-                  onClick={() => exportOfficialOfficeExcel(state)}
-                  className="w-full text-right px-4 py-2.5 text-xs hover:bg-emerald-50 text-emerald-800 font-bold flex items-center gap-2"
-               >
-                  <Building2 className="w-4 h-4 text-emerald-700" />
-                  <div>
-                    <span className="block font-black">ملف المكتب الرئيسي (الـ 5 ورقات)</span>
-                    <span className="text-[10px] text-slate-500 block">تسوية، مرتبات، مصروفات، مبيعات، جرد</span>
-                  </div>
-               </button>
-               <button
-                  onClick={() => exportFullFarmBackupExcel(state)}
-                  className="w-full text-right px-4 py-2.5 text-xs hover:bg-slate-50 text-slate-700 font-bold flex items-center gap-2 border-t border-slate-100"
-               >
-                  <FileSpreadsheet className="w-4 h-4 text-slate-500" />
-                  <div>
-                    <span className="block font-black">أرشيف المزرعة الداخلي الشامل</span>
-                    <span className="text-[10px] text-slate-500 block">نسخة احتياطية (اليومية، السلف، المشتروات)</span>
-                  </div>
-               </button>
-            </div>
-          </div>
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
+          >
+            <Download className="w-4 h-4" />
+            <span>تصدير أكسيل</span>
+          </button>
 
           <button
             onClick={triggerPrintReport}
@@ -446,6 +424,14 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
         </div>
 
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <ExportModal
+          state={state}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
 
     </div>
   );

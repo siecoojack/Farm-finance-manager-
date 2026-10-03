@@ -13,7 +13,7 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { AppState } from '../../types';
-import { parseExcelUpload, exportFarmToExcel } from '../../utils/excel';
+import { parseExcelUpload, exportOfficialOfficeExcel, exportFullFarmBackupExcel } from '../../utils/excel';
 import { shareViaWhatsApp, shareViaEmail, buildWhatsAppReportMessage, triggerPrintReport, shareViaWebShareAPI } from '../../utils/sharing';
 import { resetAppStateToDefaults } from '../../utils/storage';
 
@@ -75,14 +75,7 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
   };
 
   const handleExportFullExcel = () => {
-    const currentSettlement = state.settlements[state.currentMonth];
-    exportFarmToExcel(
-      state.currentMonth,
-      state.employees,
-      state.journalEntries,
-      state.dropdowns,
-      currentSettlement
-    );
+    exportOfficialOfficeExcel(state);
   };
 
   const handleWhatsAppShare = () => {
@@ -180,20 +173,78 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-emerald-900 font-bold text-base border-b border-slate-100 pb-3">
           <Download className="w-5 h-5 text-emerald-700" />
-          <h3>تصدير أوراق العمل إلى ملف أكسيل جديد (Excel Export)</h3>
+          <h3>تصدير أوراق العمل إلى ملف أكسيل (.xlsx) - شهر ({state.currentMonth})</h3>
         </div>
 
         <p className="text-xs text-slate-600">
-          تصدير جميع سجلات اليومية العامة، دفاتر الأستاذ، كشف الموظفين، وتقارير تسوية العهدة الشهرية في مصنف أكسيل متكامل متعدد الصفحات.
+          اختر نوع الملف المراد تنزيله وفقاً للاستخدام (كشف المكتب المعتمد بالـ 5 ورقات فقط أو الأرشيف الداخلي الكامل للمزرعة):
         </p>
 
-        <button
-          onClick={handleExportFullExcel}
-          className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition"
-        >
-          <FileSpreadsheet className="w-5 h-5" />
-          <span>تنزيل ملف أكسيل لشهر ({state.currentMonth})</span>
-        </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          
+          {/* Card 1: Official Head Office (5 sheets) */}
+          <div className="bg-emerald-50/60 border-2 border-emerald-600 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-black text-sm text-emerald-900">
+                <FileSpreadsheet className="w-5 h-5 text-emerald-700" />
+                <span>1. ملف المكتب الرئيسي الرسمي (5 ورقات فقط)</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                الملف المعتمد للإرسال للإدارة لتصفية العهدة بدون أي بيانات داخلية:
+              </p>
+              <ul className="text-[11px] text-emerald-800 space-y-1 font-semibold">
+                <li>• ورقة تصفية العهدة الشهرية (المقبوضات والمصروفات)</li>
+                <li>• كشف مسير المرتبات الرسمي (بالأساسي والزيادة والبدل)</li>
+                <li>• ورقة المصروفات (المصروفات + الميس الرسمي + العيش + الغاز)</li>
+                <li>• ورقة المبيعات النقدية للفرزة والمستبعدات</li>
+                <li>• ميزان حركة وجرد العلف والأدوية البيطرية</li>
+              </ul>
+              <div className="text-[10px] text-slate-500 bg-white p-2 rounded-lg border border-emerald-200">
+                🔒 خالي من دفاتر الأستاذ والسلف والمشتروات وسجلات العاملين.
+              </div>
+            </div>
+
+            <button
+              onClick={() => exportOfficialOfficeExcel(state)}
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition"
+            >
+              <Download className="w-4 h-4" />
+              <span>تحميل ملف المكتب الرئيسي (5 ورقات)</span>
+            </button>
+          </div>
+
+          {/* Card 2: Full Farm Backup */}
+          <div className="bg-slate-50 border-2 border-slate-300 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-black text-sm text-slate-900">
+                <FileSpreadsheet className="w-5 h-5 text-slate-700" />
+                <span>2. أرشيف المزرعة الداخلي الشامل (نسخة احتياطية)</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                نسخة احتياطية شاملة لكافة دفاتر المزرعة الداخلية الخاصة بأرشيف المدير:
+              </p>
+              <ul className="text-[11px] text-slate-700 space-y-1 font-semibold">
+                <li>• اليومية العامة الكاملة (رسمي وداخلي)</li>
+                <li>• مسير الرواتب الداخلي (شامل السلف، المشتروات، والميس)</li>
+                <li>• سجل سلف العاملين ومشتروات البيض بالآجل</li>
+                <li>• قاعدة بيانات العاملين والأرقام القومية</li>
+                <li>• جرد العلف والأدوية البيطرية</li>
+              </ul>
+              <div className="text-[10px] text-slate-500 bg-white p-2 rounded-lg border border-slate-200">
+                📁 مخصص لأرشيف المدير وحفظ قاعدة البيانات محلياً.
+              </div>
+            </div>
+
+            <button
+              onClick={() => exportFullFarmBackupExcel(state)}
+              className="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition"
+            >
+              <Download className="w-4 h-4" />
+              <span>تحميل الأرشيف الداخلي الشامل</span>
+            </button>
+          </div>
+
+        </div>
       </div>
 
       {/* SHARE & MULTI-APP DISPATCH SECTION */}
