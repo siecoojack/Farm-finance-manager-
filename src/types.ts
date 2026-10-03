@@ -7,6 +7,8 @@ export interface Employee {
   status: 'نشط' | 'إجازة' | 'موقوف' | 'مستقيل';
   notes?: string;
   hireDate?: string;
+  advanceBalance?: number;
+  miesDeduction?: number;
 }
 
 export interface DropdownOption {
@@ -18,20 +20,21 @@ export interface DropdownOption {
 
 export interface JournalEntry {
   id: string;
-  date: string; // YYYY-MM-DD
-  voucherNo: string; // رقم السند
+  date: string;
+  voucherNo: string;
   employeeId?: string;
   employeeName?: string;
-  category: string; // البند الرئيسي / الفرعي
-  sector: string; // قطاع المزرعة (الري، السماد، الصيانة...)
-  amount: number; // المبلغ
-  type: 'مصروف' | 'قبض عهدة' | 'تسوية' | 'راتب';
-  paymentMethod: string; // نقداً، تحويل بنكي، عهدة...
-  custodian: string; // أمين العهدة / المسؤول
-  statement: string; // البيان / الوصف
+  category: string;
+  sector: string;
+  amount: number;
+  type: 'مصروف' | 'قبض عهدة' | 'تسوية' | 'راتب' | 'مبيعات';
+  paymentMethod: string;
+  custodian: string;
+  statement: string;
   notes?: string;
-  monthKey: string; // e.g., "2026-07"
+  monthKey: string;
   createdAt: string;
+  isInternal: boolean;
 }
 
 export interface MonthlySettlement {
@@ -49,13 +52,15 @@ export interface MonthlySettlement {
 }
 
 export interface AppState {
-  currentMonth: string; // e.g., "2026-07"
+  currentMonth: string;
   employees: Employee[];
   dropdowns: DropdownOption[];
   journalEntries: JournalEntry[];
-  settlements: Record<string, MonthlySettlement>; // key is monthKey
+  settlements: Record<string, MonthlySettlement>;
+  minPettyCashLimit?: number;
+  officialMiesPerPerson: number;
   viewMode: 'desktop' | 'android';
-  activeTab: 'journal' | 'ledger' | 'settlement' | 'employees' | 'settings' | 'import_export';
+  activeTab: 'journal' | 'ledger' | 'settlement' | 'employees' | 'settings' | 'import_export' | 'inventory';
 }
 
 export interface ExcelSheetImportData {

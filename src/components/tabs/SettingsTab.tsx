@@ -74,6 +74,41 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
           </button>
         </div>
 
+        {/* Min Petty Cash Limit & Mies */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-5 h-5 text-emerald-800" />
+              <h4 className="font-bold text-emerald-900">إعدادات التنبيهات المالية</h4>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-bold text-slate-700">الحد الأدنى المقبول للعهدة (ج.م):</label>
+              <input
+                type="number"
+                value={state.minPettyCashLimit || 0}
+                onChange={e => setState(prev => ({ ...prev, minPettyCashLimit: Number(e.target.value) }))}
+                className="bg-white border border-slate-300 rounded-lg p-2 font-bold text-slate-800 w-32"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Settings className="w-5 h-5 text-emerald-800" />
+              <h4 className="font-bold text-emerald-900">إعدادات الميس الرسمية</h4>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-bold text-slate-700">قيمة الميس الرسمي للفرد (ج.م):</label>
+              <input
+                type="number"
+                value={state.officialMiesPerPerson || 0}
+                onChange={e => setState(prev => ({ ...prev, officialMiesPerPerson: Number(e.target.value) }))}
+                className="bg-white border border-slate-300 rounded-lg p-2 font-bold text-slate-800 w-32"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Add Dropdown Option Form */}
         {showDropdownForm && (
           <form onSubmit={handleAddDropdown} className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-300 space-y-3 text-xs">

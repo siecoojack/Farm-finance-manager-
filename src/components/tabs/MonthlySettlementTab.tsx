@@ -9,7 +9,8 @@ import {
   UserCheck, 
   PieChart, 
   Save, 
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react';
 import { AppState } from '../../types';
 import { buildWhatsAppReportMessage, shareViaWhatsApp, shareViaEmail, triggerPrintReport } from '../../utils/sharing';
@@ -37,23 +38,7 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
 
   const currentMonthEntries = state.journalEntries.filter(e => e.monthKey === currentMonth);
 
-  // Calculate Advances & Expenses
-  const calculatedAdvances = currentMonthEntries
-    .filter(e => e.type === 'قبض عهدة')
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const calculatedExpenses = currentMonthEntries
-    .filter(e => e.type === 'مصروف')
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const calculatedSalaries = currentMonthEntries
-    .filter(e => e.type === 'راتب')
-    .reduce((sum, e) => sum + e.amount, 0);
-
   const openingBal = settlement.openingBalance || 0;
-  const totalAvailable = openingBal + calculatedAdvances;
-  const totalOutflows = calculatedExpenses + calculatedSalaries;
-  const closingBal = totalAvailable - totalOutflows;
 
   // Form State
   const [custodianName, setCustodianName] = useState(settlement.custodianName || 'مهندس أحمد علي الخولي');
@@ -61,19 +46,49 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
   const [reportStatus, setReportStatus] = useState<any>(settlement.status || 'مسودة');
   const [reportNotes, setReportNotes] = useState<string>(settlement.notes || '');
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [isOfficialView, setIsOfficialView] = useState<boolean>(true);
 
+  // Filter entries
+  const visibleEntries = isOfficialView 
+    ? currentMonthEntries.filter(e => !e.isInternal)
+    : currentMonthEntries;
+
+  // Calculate Advances & Expenses
+  const calculatedAdvances = visibleEntries
+    .filter(e => e.type === 'قبض عهدة')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const calculatedExpenses = visibleEntries
+    .filter(e => e.type === 'مصروف')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const calculatedSalaries = visibleEntries
+    .filter(e => e.type === 'راتب')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  // Add Official Mies logic for calculation
+  const officialMiesTotal = isOfficialView ? (state.employees.length * state.officialMiesPerPerson) : 0;
+  const totalExpensesWithMies = calculatedExpenses + officialMiesTotal;
+  
+  const totalAvailable = openingBal + calculatedAdvances;
+  const totalOutflows = totalExpensesWithMies + calculatedSalaries;
+  const closingBal = totalAvailable - totalOutflows;
+  
   // Category breakdown for percentage visualizer
   const categoryMap: Record<string, number> = {};
-  currentMonthEntries.forEach(e => {
+  visibleEntries.forEach(e => {
     if (e.type === 'مصروف' || e.type === 'راتب') {
       categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount;
     }
   });
+  if (isOfficialView) {
+      categoryMap['ميس المزرعة الرسمي'] = officialMiesTotal;
+  }
 
   const categoryBreakdown = Object.entries(categoryMap).map(([cat, amt]) => ({
     category: cat,
     amount: amt,
-    percentage: calculatedExpenses > 0 ? ((amt / calculatedExpenses) * 100).toFixed(1) : '0'
+    percentage: (calculatedExpenses + officialMiesTotal) > 0 ? ((amt / (calculatedExpenses + officialMiesTotal)) * 100).toFixed(1) : '0'
   })).sort((a, b) => b.amount - a.amount);
 
   const handleSaveSettlement = () => {
@@ -135,7 +150,7 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
     exportFarmToExcel(
       currentMonth,
       state.employees,
-      state.journalEntries,
+      visibleEntries, // Changed from state.journalEntries to visibleEntries
       state.dropdowns,
       {
         ...settlement,
@@ -168,6 +183,17 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Toggle View */}
+          <button
+            onClick={() => setIsOfficialView(!isOfficialView)}
+            className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition ${
+              isOfficialView ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+            }`}
+          >
+            {isOfficialView ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            <span>{isOfficialView ? 'عرض رسمي (للمكتب)' : 'عرض كامل (داخلي)'}</span>
+          </button>
+          
           {saveSuccess && (
             <span className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-lg font-bold border border-emerald-300 animate-pulse">
               ✓ تم حفظ الكشف بنجاح
@@ -199,14 +225,28 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
             <span>إيميل</span>
           </button>
 
-          <button
-            onClick={handleExcelExport}
-            className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition"
-            title="تصدير أكسيل"
-          >
-            <Download className="w-4 h-4" />
-            <span>أكسيل</span>
-          </button>
+          <div className="relative group">
+            <button
+              className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
+            >
+              <Download className="w-4 h-4" />
+              <span>تصدير أكسيل</span>
+            </button>
+            <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 w-48 z-10 hidden group-hover:block">
+               <button
+                  onClick={() => { setIsOfficialView(true); setTimeout(handleExcelExport, 100); }}
+                  className="w-full text-right px-4 py-2 text-xs hover:bg-emerald-50 text-slate-800 font-bold"
+               >
+                  تصدير تسوية للمكتب (رسمي)
+               </button>
+               <button
+                  onClick={() => { setIsOfficialView(false); setTimeout(handleExcelExport, 100); }}
+                  className="w-full text-right px-4 py-2 text-xs hover:bg-rose-50 text-rose-800 font-bold"
+               >
+                  تصدير الكل (داخلي)
+               </button>
+            </div>
+          </div>
 
           <button
             onClick={triggerPrintReport}

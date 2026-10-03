@@ -14,6 +14,8 @@ export function loadAppState(): AppState {
         dropdowns: parsed.dropdowns || INITIAL_DROPDOWNS,
         journalEntries: parsed.journalEntries || INITIAL_JOURNAL_ENTRIES,
         settlements: parsed.settlements || INITIAL_SETTLEMENTS,
+        minPettyCashLimit: parsed.minPettyCashLimit || 0,
+        officialMiesPerPerson: parsed.officialMiesPerPerson || 0,
         viewMode: parsed.viewMode || 'desktop',
         activeTab: parsed.activeTab || 'journal'
       };
@@ -28,6 +30,8 @@ export function loadAppState(): AppState {
     dropdowns: INITIAL_DROPDOWNS,
     journalEntries: INITIAL_JOURNAL_ENTRIES,
     settlements: INITIAL_SETTLEMENTS,
+    minPettyCashLimit: 0,
+    officialMiesPerPerson: 0,
     viewMode: 'desktop',
     activeTab: 'journal'
   };
@@ -48,6 +52,8 @@ export function resetAppStateToDefaults(): AppState {
     dropdowns: INITIAL_DROPDOWNS,
     journalEntries: INITIAL_JOURNAL_ENTRIES,
     settlements: INITIAL_SETTLEMENTS,
+    minPettyCashLimit: 0,
+    officialMiesPerPerson: 0,
     viewMode: 'desktop',
     activeTab: 'journal'
   };

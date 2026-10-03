@@ -37,6 +37,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [voucherNo, setVoucherNo] = useState(`V-${String(currentMonthEntries.length + 1).padStart(3, '0')}`);
   const [type, setType] = useState<JournalEntry['type']>('مصروف');
+  const [isInternal, setIsInternal] = useState(false); // Added
   const [sector, setSector] = useState(state.dropdowns.find(d => d.type === 'sector')?.name || 'قطاع الآبار ومحطات الري');
   const [category, setCategory] = useState(state.dropdowns.find(d => d.type === 'category')?.name || 'وقود وبنزين وديزل');
   const [amount, setAmount] = useState<string>('');
@@ -51,6 +52,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
   const [filterSector, setFilterSector] = useState('ALL');
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [filterType, setFilterType] = useState('ALL');
+  const [filterScope, setFilterScope] = useState<'ALL' | 'OFFICIAL' | 'INTERNAL'>('ALL'); // Added
 
   // Calculations for Active Month
   const totalAdvances = currentMonthEntries
@@ -74,8 +76,11 @@ export const JournalTab: React.FC<JournalTabProps> = ({
     const matchesSector = filterSector === 'ALL' || e.sector === filterSector;
     const matchesCategory = filterCategory === 'ALL' || e.category === filterCategory;
     const matchesType = filterType === 'ALL' || e.type === filterType;
+    const matchesScope = filterScope === 'ALL' || 
+                         (filterScope === 'OFFICIAL' && !e.isInternal) || 
+                         (filterScope === 'INTERNAL' && e.isInternal);
 
-    return matchesSearch && matchesSector && matchesCategory && matchesType;
+    return matchesSearch && matchesSector && matchesCategory && matchesType && matchesScope;
   });
 
   const handleSaveEntry = (e: React.FormEvent) => {
@@ -106,7 +111,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
           employeeName: selectedEmp?.name || undefined,
           statement,
           notes,
-          monthKey: state.currentMonth
+          monthKey: state.currentMonth,
+          isInternal
         } : item)
       }));
     } else {
@@ -126,7 +132,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
         statement,
         notes,
         monthKey: state.currentMonth,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        isInternal
       };
 
       setState(prev => ({
@@ -157,6 +164,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
     setEmployeeId(entry.employeeId || '');
     setStatement(entry.statement);
     setNotes(entry.notes || '');
+    setIsInternal(entry.isInternal); // Added
     setShowForm(true);
   };
 
@@ -294,19 +302,36 @@ export const JournalTab: React.FC<JournalTabProps> = ({
               />
             </div>
 
-            {/* Movement Type */}
-            <div>
-              <label className="block text-slate-700 font-bold mb-1">نوع الحركة المالية</label>
-              <select
-                value={type}
-                onChange={e => setType(e.target.value as any)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="مصروف">مصروف تشغيلي (صرف)</option>
-                <option value="قبض عهدة">قبض عهدة / تعزيز (إيداع)</option>
-                <option value="راتب">سداد راتب موظف</option>
-                <option value="تسوية">تسوية عهدة أو مرجوعات</option>
-              </select>
+            {/* Movement Type & Internal flag */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">نوع الحركة المالية</label>
+                <select
+                  value={type}
+                  onChange={e => setType(e.target.value as any)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="مصروف">مصروف تشغيلي (صرف)</option>
+                  <option value="قبض عهدة">قبض عهدة / تعزيز (إيداع)</option>
+                  <option value="راتب">سداد راتب موظف</option>
+                  <option value="مبيعات">إيراد مبيعات</option>
+                  <option value="تسوية">تسوية عهدة أو مرجوعات</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">حالة السند</label>
+                <div className="flex items-center gap-2 pt-2">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" checked={!isInternal} onChange={() => setIsInternal(false)} className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-bold text-slate-700">رسمي (للمكتب)</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" checked={isInternal} onChange={() => setIsInternal(true)} className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-bold text-rose-700">داخلي (سلف/ميس)</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Amount */}
@@ -499,6 +524,17 @@ export const JournalTab: React.FC<JournalTabProps> = ({
               <option value="مصروف">مصروفات فقط</option>
               <option value="قبض عهدة">قبض عهدة فقط</option>
               <option value="راتب">رواتب فقط</option>
+            </select>
+
+            {/* Filter Scope */}
+            <select
+              value={filterScope}
+              onChange={e => setFilterScope(e.target.value as any)}
+              className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700"
+            >
+              <option value="ALL">الكل (رسمي + داخلي)</option>
+              <option value="OFFICIAL">رسمي فقط</option>
+              <option value="INTERNAL">داخلي فقط</option>
             </select>
           </div>
 

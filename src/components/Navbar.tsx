@@ -122,27 +122,47 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Month Selector & Controls */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Active Month Dropdown */}
-            <div className="flex items-center bg-emerald-800/90 border border-emerald-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-100">
-              <Calendar className="w-4 h-4 text-emerald-300 ml-1.5" />
-              <span className="ml-1 font-semibold text-emerald-300">الشهر:</span>
-              <select
-                value={state.currentMonth}
-                onChange={(e) => setState(prev => ({ ...prev, currentMonth: e.target.value }))}
-                className="bg-transparent text-white font-bold cursor-pointer outline-none focus:ring-0 text-xs"
-              >
-                {monthsList.map(mKey => (
-                  <option key={mKey} value={mKey} className="bg-emerald-900 text-white">
-                    {formatMonthDisplay(mKey)}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleAddNewMonth}
-                title="إضافة شهر جديد"
-                className="mr-2 text-emerald-300 hover:text-white p-1 hover:bg-emerald-700 rounded transition"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center bg-emerald-800/90 border border-emerald-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-100">
+                <Calendar className="w-4 h-4 text-emerald-300 ml-1.5" />
+                <span className="ml-1 font-semibold text-emerald-300">الشهر:</span>
+                <select
+                  value={state.currentMonth}
+                  onChange={(e) => setState(prev => ({ ...prev, currentMonth: e.target.value }))}
+                  className="bg-transparent text-white font-bold cursor-pointer outline-none focus:ring-0 text-xs"
+                >
+                  {monthsList.map(mKey => (
+                    <option key={mKey} value={mKey} className="bg-emerald-900 text-white">
+                      {formatMonthDisplay(mKey)}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAddNewMonth}
+                  title="إضافة شهر جديد"
+                  className="mr-2 text-emerald-300 hover:text-white p-1 hover:bg-emerald-700 rounded transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Petty Cash Balance */}
+              {(() => {
+                const currentMonthEntries = state.journalEntries.filter(e => e.monthKey === state.currentMonth);
+                const openingBal = state.settlements[state.currentMonth]?.openingBalance || 0;
+                const calculatedAdvances = currentMonthEntries.filter(e => e.type === 'قبض عهدة').reduce((sum, e) => sum + e.amount, 0);
+                const calculatedExpenses = currentMonthEntries.filter(e => e.type === 'مصروف').reduce((sum, e) => sum + e.amount, 0);
+                const calculatedSalaries = currentMonthEntries.filter(e => e.type === 'راتب').reduce((sum, e) => sum + e.amount, 0);
+                const currentBalance = openingBal + calculatedAdvances - (calculatedExpenses + calculatedSalaries);
+                const isLowBalance = (state.minPettyCashLimit && state.minPettyCashLimit > 0) && (currentBalance < state.minPettyCashLimit);
+                
+                return (
+                  <div className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold border ${isLowBalance ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-emerald-900/50 text-emerald-100 border-emerald-800'}`}>
+                    <span className="ml-2">رصيد العهدة:</span>
+                    <span className="font-mono">{currentBalance.toLocaleString('ar-EG')} ج.م</span>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Action Buttons */}
