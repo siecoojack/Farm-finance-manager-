@@ -96,11 +96,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 15000,
     type: 'قبض عهدة',
     paymentMethod: 'تحويل بنكي direct bank',
+    debitAccount: 'العهدة',
+    creditAccount: 'المكتب الرئيسي',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'تحويل عهدة جديدة لشهر يوليو من المكتب الرئيسي عبر الحساب البنكي',
     notes: 'مرجع التحويل #TX998231',
     monthKey: '2026-07',
-    createdAt: '2026-07-01T08:30:00Z'
+    createdAt: '2026-07-01T08:30:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-002',
@@ -113,11 +116,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 1850,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'شراء 1000 لتر ديزل لتشغيل مولدات الآبار المحطة رقم 1 ورقم 2',
     notes: 'فاتورة محطة الأمل رقم 4410',
     monthKey: '2026-07',
-    createdAt: '2026-07-02T10:15:00Z'
+    createdAt: '2026-07-02T10:15:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-003',
@@ -130,11 +136,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 3200,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'شراء 20 شكارة سماد NPK متعادل + عنصر البوتاسيوم لتسميد النخيل',
     notes: 'مؤسسة النماء الزراعية - فاتورة 8821',
     monthKey: '2026-07',
-    createdAt: '2026-07-04T11:00:00Z'
+    createdAt: '2026-07-04T11:00:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-004',
@@ -147,11 +156,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 750,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'تغيير فلاتر زيت وهيدروليك للجرار الزراعي ميسي فيرجسون',
     notes: 'ورشة الوفاء للصيانة',
     monthKey: '2026-07',
-    createdAt: '2026-07-07T14:20:00Z'
+    createdAt: '2026-07-07T14:20:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-005',
@@ -162,11 +174,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 1400,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'أجور عمالة موسومية (4 عمال × 3 أيام. تقليم وتهوية البيوت المحمية)',
     notes: 'كشف حضور وانصراف عمالة يومية مرفق',
     monthKey: '2026-07',
-    createdAt: '2026-07-10T16:00:00Z'
+    createdAt: '2026-07-10T16:00:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-006',
@@ -179,11 +194,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 920,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'شراء مبيد حشري لمكافحة التريبس وصانعات الأنفاق بالصوب',
     notes: 'الشركة العربية للمستلزمات',
     monthKey: '2026-07',
-    createdAt: '2026-07-12T09:40:00Z'
+    createdAt: '2026-07-12T09:40:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-007',
@@ -194,11 +212,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 10000,
     type: 'قبض عهدة',
     paymentMethod: 'تحويل بنكي direct bank',
+    debitAccount: 'العهدة',
+    creditAccount: 'المكتب الرئيسي',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'تعزيز عهدة المزرعة الوسطى من إدارة الحسابات بالشركة',
     notes: 'تحويل بنكي #TX999104',
     monthKey: '2026-07',
-    createdAt: '2026-07-15T11:30:00Z'
+    createdAt: '2026-07-15T11:30:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-008',
@@ -211,11 +232,14 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 1150,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'شراء مواد غذائية ومياه شرب وإعاشة لعمال المزرعة عن النصف الأول من الشهر',
     notes: 'إيصال مركز التسوق',
     monthKey: '2026-07',
-    createdAt: '2026-07-18T13:10:00Z'
+    createdAt: '2026-07-18T13:10:00Z',
+    isInternal: false
   },
   {
     id: 'JRN-2026-009',
@@ -228,12 +252,16 @@ export const INITIAL_JOURNAL_ENTRIES: JournalEntry[] = [
     amount: 1300,
     type: 'مصروف',
     paymentMethod: 'نقداً من العهدة النقدية',
+    debitAccount: 'المصروفات',
+    creditAccount: 'العهدة',
     custodian: 'عهدة مهندس أحمد علي (المهندس)',
     statement: 'إصلاح طلمبة غاطس البئر رقم 3 وتغيير جلب نحاس وخراطيم 3 بوصة',
     notes: 'مركز صيانة الهيدروليك',
     monthKey: '2026-07',
-    createdAt: '2026-07-20T15:45:00Z'
-  }
+    createdAt: '2026-07-20T15:45:00Z',
+    isInternal: false
+  },
+
 ];
 
 export const INITIAL_SETTLEMENTS: Record<string, MonthlySettlement> = {

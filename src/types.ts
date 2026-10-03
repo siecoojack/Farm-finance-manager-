@@ -38,6 +38,8 @@ export interface JournalEntry {
   amount: number;
   type: 'مصروف' | 'قبض عهدة' | 'تسوية' | 'راتب' | 'مبيعات';
   paymentMethod: string;
+  debitAccount: string; // Account getting debited
+  creditAccount: string; // Account getting credited
   custodian: string;
   statement: string;
   notes?: string;
@@ -46,7 +48,7 @@ export interface JournalEntry {
   isInternal: boolean;
   // Sales specific fields
   isGift?: boolean;
-  recipient?: string; // لجهة الهدايا أو الآجل
+  recipient?: string;
   isCreditSale?: boolean;
   quantity?: number;
   unitPrice?: number;
