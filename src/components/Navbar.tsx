@@ -15,7 +15,10 @@ import {
   Calendar,
   Sparkles,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Package,
+  CreditCard,
+  ShoppingCart
 } from 'lucide-react';
 import { AppState } from '../types';
 
@@ -269,6 +272,42 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Settings className="w-4 h-4" />
             <span>الإعدادات وجداول القوائم</span>
+          </button>
+
+          <button
+            onClick={() => setState(prev => ({ ...prev, activeTab: 'inventory' }))}
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
+              state.activeTab === 'inventory'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
+            }`}
+          >
+            <Package className="w-4 h-4" />
+            <span>جرد المخزون</span>
+          </button>
+
+          <button
+            onClick={() => setState(prev => ({ ...prev, activeTab: 'expenses' }))}
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
+              state.activeTab === 'expenses'
+                ? 'bg-rose-800 text-rose-50 border-rose-400 shadow-sm'
+                : 'text-rose-200/90 hover:text-white hover:bg-rose-800/40 border-transparent'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>المصروفات</span>
+          </button>
+
+          <button
+            onClick={() => setState(prev => ({ ...prev, activeTab: 'sales' }))}
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-lg flex items-center gap-1.5 border-b-2 transition whitespace-nowrap shrink-0 ${
+              state.activeTab === 'sales'
+                ? 'bg-emerald-800 text-emerald-50 border-emerald-400 shadow-sm'
+                : 'text-emerald-200/90 hover:text-white hover:bg-emerald-800/40 border-transparent'
+            }`}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            <span>المبيعات</span>
           </button>
 
           <button

@@ -1,3 +1,11 @@
+export interface SalaryAdjustment {
+  id: string;
+  amount: number;
+  date: string;
+  type: 'زيادة' | 'خصم';
+  description: string;
+}
+
 export interface Employee {
   id: string;
   name: string;
@@ -9,6 +17,7 @@ export interface Employee {
   hireDate?: string;
   advanceBalance?: number;
   miesDeduction?: number;
+  salaryAdjustments?: SalaryAdjustment[];
 }
 
 export interface DropdownOption {
@@ -35,6 +44,12 @@ export interface JournalEntry {
   monthKey: string;
   createdAt: string;
   isInternal: boolean;
+  // Sales specific fields
+  isGift?: boolean;
+  recipient?: string; // لجهة الهدايا أو الآجل
+  isCreditSale?: boolean;
+  quantity?: number;
+  unitPrice?: number;
 }
 
 export interface MonthlySettlement {
@@ -51,16 +66,43 @@ export interface MonthlySettlement {
   updatedAt: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: 'علف' | 'أدوية';
+  unit: string;
+  openingBalance: number;
+  received: number;
+  consumed: number;
+  closingBalance: number;
+  date: string;
+  monthKey: string;
+}
+
+export interface GiftCreditSale {
+  id: string;
+  date: string;
+  statement: string;
+  isGift: boolean;
+  recipient: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  monthKey: string;
+}
+
 export interface AppState {
   currentMonth: string;
   employees: Employee[];
   dropdowns: DropdownOption[];
   journalEntries: JournalEntry[];
+  salesEntries: GiftCreditSale[];
   settlements: Record<string, MonthlySettlement>;
+  inventory: InventoryItem[];
   minPettyCashLimit?: number;
   officialMiesPerPerson: number;
   viewMode: 'desktop' | 'android';
-  activeTab: 'journal' | 'ledger' | 'settlement' | 'employees' | 'settings' | 'import_export' | 'inventory';
+  activeTab: 'journal' | 'ledger' | 'settlement' | 'employees' | 'settings' | 'import_export' | 'inventory' | 'expenses' | 'sales';
 }
 
 export interface ExcelSheetImportData {

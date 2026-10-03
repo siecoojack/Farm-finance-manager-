@@ -1,4 +1,4 @@
-import { Employee, DropdownOption, JournalEntry, MonthlySettlement } from '../types';
+import { Employee, DropdownOption, JournalEntry, MonthlySettlement, InventoryItem } from '../types';
 
 export const INITIAL_EMPLOYEES: Employee[] = [
   {
@@ -73,9 +73,11 @@ export const INITIAL_DROPDOWNS: DropdownOption[] = [
 
   // طرق الدفع (Payment Methods)
   { id: 'pay-1', type: 'payment_method', name: 'نقداً من العهدة النقدية', description: 'صرف مباشر من الخزينة النقدية' },
+  { id: 'pay-6', type: 'payment_method', name: 'نقدي (مبيعات)', description: 'استلام نقدي مباشر' },
   { id: 'pay-2', type: 'payment_method', name: 'تحويل بنكي direct bank', description: 'حساب المزرعة البنكي' },
   { id: 'pay-3', type: 'payment_method', name: 'شيك مصرفي', description: 'شيكات المزرعة' },
   { id: 'pay-4', type: 'payment_method', name: 'بطاقة مدى / شبكة', description: 'دفع بالبطاقة' },
+  { id: 'pay-5', type: 'payment_method', name: 'إيراد مبيعات نقدي', description: 'إيداع إيراد مبيعات مباشر' },
 
   // الأمناء (Custodians)
   { id: 'cust-1', type: 'custodian', name: 'عهدة مهندس أحمد علي (المهندس)', description: 'العهدة المالية الرئيسية للمزرعة' },
@@ -250,3 +252,5 @@ export const INITIAL_SETTLEMENTS: Record<string, MonthlySettlement> = {
     updatedAt: new Date().toISOString()
   }
 };
+
+export const INITIAL_INVENTORY: InventoryItem[] = [];

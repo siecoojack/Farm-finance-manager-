@@ -1,5 +1,5 @@
 import { AppState, Employee, DropdownOption, JournalEntry, MonthlySettlement } from '../types';
-import { INITIAL_EMPLOYEES, INITIAL_DROPDOWNS, INITIAL_JOURNAL_ENTRIES, INITIAL_SETTLEMENTS, CURRENT_MONTH_KEY } from '../data/initialData';
+import { INITIAL_EMPLOYEES, INITIAL_DROPDOWNS, INITIAL_JOURNAL_ENTRIES, INITIAL_SETTLEMENTS, INITIAL_INVENTORY, CURRENT_MONTH_KEY } from '../data/initialData';
 
 const STORAGE_KEY = 'FARM_FINANCIAL_APP_STATE_V1';
 
@@ -13,7 +13,9 @@ export function loadAppState(): AppState {
         employees: parsed.employees || INITIAL_EMPLOYEES,
         dropdowns: parsed.dropdowns || INITIAL_DROPDOWNS,
         journalEntries: parsed.journalEntries || INITIAL_JOURNAL_ENTRIES,
+        salesEntries: parsed.salesEntries || [],
         settlements: parsed.settlements || INITIAL_SETTLEMENTS,
+        inventory: parsed.inventory || INITIAL_INVENTORY,
         minPettyCashLimit: parsed.minPettyCashLimit || 0,
         officialMiesPerPerson: parsed.officialMiesPerPerson || 0,
         viewMode: parsed.viewMode || 'desktop',
@@ -29,7 +31,9 @@ export function loadAppState(): AppState {
     employees: INITIAL_EMPLOYEES,
     dropdowns: INITIAL_DROPDOWNS,
     journalEntries: INITIAL_JOURNAL_ENTRIES,
+    salesEntries: [],
     settlements: INITIAL_SETTLEMENTS,
+    inventory: INITIAL_INVENTORY,
     minPettyCashLimit: 0,
     officialMiesPerPerson: 0,
     viewMode: 'desktop',
@@ -51,7 +55,9 @@ export function resetAppStateToDefaults(): AppState {
     employees: INITIAL_EMPLOYEES,
     dropdowns: INITIAL_DROPDOWNS,
     journalEntries: INITIAL_JOURNAL_ENTRIES,
+    salesEntries: [],
     settlements: INITIAL_SETTLEMENTS,
+    inventory: INITIAL_INVENTORY,
     minPettyCashLimit: 0,
     officialMiesPerPerson: 0,
     viewMode: 'desktop',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Printer, CheckCircle } from 'lucide-react';
+import { X, Printer, CheckCircle, MessageCircle } from 'lucide-react';
 import { JournalEntry } from '../../types';
 
 interface VoucherModalProps {
@@ -13,10 +13,15 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ entry, onClose }) =>
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleWhatsApp = () => {
+      const message = `سند ${entry.voucherNo}\nالتاريخ: ${entry.date}\nالبيان: ${entry.statement}\nالمبلغ: ${entry.amount.toLocaleString('ar-EG')} ج.م`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 relative space-y-6">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2" dir="rtl">
+      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 relative space-y-6 max-h-[90vh] overflow-y-auto">
         
         {/* Modal Controls (Hidden during print) */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 print:hidden">
@@ -27,11 +32,18 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ entry, onClose }) =>
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleWhatsApp}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>واتساب</span>
+            </button>
+            <button
               onClick={handlePrint}
               className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
             >
               <Printer className="w-4 h-4" />
-              <span>طباعة السند</span>
+              <span>طباعة</span>
             </button>
             <button
               onClick={onClose}

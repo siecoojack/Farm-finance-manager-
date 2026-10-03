@@ -7,6 +7,9 @@ import { MonthlySettlementTab } from './components/tabs/MonthlySettlementTab';
 import { EmployeesTab } from './components/tabs/EmployeesTab';
 import { SettingsTab } from './components/tabs/SettingsTab';
 import { ImportExportTab } from './components/tabs/ImportExportTab';
+import { InventoryTab } from './components/tabs/InventoryTab';
+import { ExpensesTab } from './components/tabs/ExpensesTab';
+import { SalesTab } from './components/tabs/SalesTab';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -55,6 +58,12 @@ export default function App() {
         return <SettingsTab state={state} setState={setState} />;
       case 'import_export':
         return <ImportExportTab state={state} setState={setState} />;
+      case 'inventory':
+        return <InventoryTab state={state} setState={setState} />;
+      case 'expenses':
+        return <ExpensesTab state={state} />;
+      case 'sales':
+        return <SalesTab state={state} setState={setState} />;
       default:
         return (
           <JournalTab

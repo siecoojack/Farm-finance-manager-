@@ -38,9 +38,13 @@ export const JournalTab: React.FC<JournalTabProps> = ({
   const [voucherNo, setVoucherNo] = useState(`V-${String(currentMonthEntries.length + 1).padStart(3, '0')}`);
   const [type, setType] = useState<JournalEntry['type']>('مصروف');
   const [isInternal, setIsInternal] = useState(false); // Added
+  const [isGift, setIsGift] = useState(false); // Added
+  const [recipient, setRecipient] = useState(''); // Added
   const [sector, setSector] = useState(state.dropdowns.find(d => d.type === 'sector')?.name || 'قطاع الآبار ومحطات الري');
   const [category, setCategory] = useState(state.dropdowns.find(d => d.type === 'category')?.name || 'وقود وبنزين وديزل');
   const [amount, setAmount] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(0); // Added
+  const [unitPrice, setUnitPrice] = useState<number>(0); // Added
   const [paymentMethod, setPaymentMethod] = useState(state.dropdowns.find(d => d.type === 'payment_method')?.name || 'نقداً من العهدة النقدية');
   const [custodian, setCustodian] = useState(state.dropdowns.find(d => d.type === 'custodian')?.name || 'عهدة مهندس أحمد علي (المهندس)');
   const [employeeId, setEmployeeId] = useState<string>('');
@@ -105,6 +109,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
           sector,
           category,
           amount: Number(amount),
+          quantity: quantity,
+          unitPrice: unitPrice,
           paymentMethod,
           custodian,
           employeeId: employeeId || undefined,
@@ -125,6 +131,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
         sector,
         category,
         amount: Number(amount),
+        quantity: quantity,
+        unitPrice: unitPrice,
         paymentMethod,
         custodian,
         employeeId: employeeId || undefined,
@@ -145,6 +153,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
     // Reset Form
     setEditingId(null);
     setAmount('');
+    setQuantity(0); // Added
+    setUnitPrice(0); // Added
     setStatement('');
     setNotes('');
     setVoucherNo(`V-${String(currentMonthEntries.length + 2).padStart(3, '0')}`);
@@ -159,6 +169,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
     setSector(entry.sector);
     setCategory(entry.category);
     setAmount(String(entry.amount));
+    setQuantity(entry.quantity || 0); // Added
+    setUnitPrice(entry.unitPrice || 0); // Added
     setPaymentMethod(entry.paymentMethod);
     setCustodian(entry.custodian);
     setEmployeeId(entry.employeeId || '');
@@ -250,24 +262,25 @@ export const JournalTab: React.FC<JournalTabProps> = ({
 
       </div>
 
-      {/* Entry Form Modal/Collapsible */}
+      {/* Entry Form Modal */}
       {showForm && (
-        <form onSubmit={handleSaveEntry} className="bg-white p-5 rounded-2xl border-2 border-emerald-600 shadow-md space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Receipt className="w-5 h-5 text-emerald-700" />
-              <h3 className="font-bold text-slate-800 text-sm">
-                {editingId ? 'تعديل سند يومية' : 'إدخال سند يومية جديد (مصروف / قبض عهدة)'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2" dir="rtl">
+          <form onSubmit={handleSaveEntry} className="bg-white p-6 rounded-2xl w-full max-w-4xl shadow-2xl border border-slate-200 relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-emerald-700" />
+                <h3 className="font-bold text-slate-800 text-sm">
+                  {editingId ? 'تعديل سند يومية' : 'إدخال سند يومية جديد'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="text-slate-400 hover:text-slate-600 p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
 
           {formError && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
@@ -320,11 +333,11 @@ export const JournalTab: React.FC<JournalTabProps> = ({
               </div>
               
               <div>
-                <label className="block text-slate-700 font-bold mb-1">حالة السند</label>
+                <label className="block text-slate-700 font-bold mb-1">نوع السند (لورقة العمل)</label>
                 <div className="flex items-center gap-2 pt-2">
                   <label className="flex items-center gap-1 cursor-pointer">
                     <input type="radio" checked={!isInternal} onChange={() => setIsInternal(false)} className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-slate-700">رسمي (للمكتب)</span>
+                    <span className="text-xs font-bold text-slate-700">رسمي (مكتب)</span>
                   </label>
                   <label className="flex items-center gap-1 cursor-pointer">
                     <input type="radio" checked={isInternal} onChange={() => setIsInternal(true)} className="w-4 h-4 text-emerald-600" />
@@ -347,6 +360,37 @@ export const JournalTab: React.FC<JournalTabProps> = ({
                 className="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg p-2 font-black text-emerald-800 text-sm focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+
+            {/* Sales Details (Quantity/Price) */}
+            <>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">العدد</label>
+                  <input
+                    type="number"
+                    value={quantity || ''}
+                    onChange={e => {
+                        const q = Number(e.target.value);
+                        setQuantity(q);
+                        if (unitPrice > 0) setAmount(String(q * unitPrice));
+                    }}
+                    className="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg p-2 font-black text-emerald-800 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">سعر الوحدة</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={unitPrice || ''}
+                    onChange={e => {
+                        const p = Number(e.target.value);
+                        setUnitPrice(p);
+                        if (quantity > 0) setAmount(String(quantity * p));
+                    }}
+                    className="w-full bg-emerald-50/50 border border-emerald-300 rounded-lg p-2 font-black text-emerald-800 text-sm"
+                  />
+                </div>
+            </>
 
             {/* Farm Sector */}
             <div>
@@ -465,6 +509,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
             </button>
           </div>
         </form>
+        </div>
       )}
 
       {/* Filter and Search Bar */}
@@ -610,7 +655,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({
                     </td>
                     <td className="p-3 font-black text-sm whitespace-nowrap">
                       <span className={entry.type === 'قبض عهدة' ? 'text-emerald-700' : 'text-slate-900'}>
-                        {entry.amount.toLocaleString('ar-EG')}
+                        {entry.amount.toLocaleString('ar-EG')} ج.م
                       </span>
                     </td>
                     <td className="p-3 text-[11px] text-slate-600">
