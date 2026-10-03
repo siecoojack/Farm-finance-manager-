@@ -3,53 +3,99 @@ import { Employee, DropdownOption, JournalEntry, MonthlySettlement, InventoryIte
 export const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'EMP-01',
-    name: 'مهندس أحمد علي الخولي',
-    role: 'مدير المزرعة والمهندس الزراعي',
-    phone: '0501234567',
-    salary: 6500,
-    status: 'نشط',
-    hireDate: '2023-01-15',
-    notes: 'مسؤول العهدة والمشتروات الكبرى'
+    name: 'م السيد الفرماوي',
+    role: 'مدير المحطة',
+    phone: '01061452017',
+    nationalId: '28109130201714',
+    salary: 10780,
+    status: 'منتظم',
+    hireDate: '2010',
+    notes: 'مدير المحطة والمسؤول المالي',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
   },
   {
     id: 'EMP-02',
-    name: 'محمود عبد السلام',
-    role: 'مشرف شبكات الري والطاقة',
-    phone: '0559876543',
-    salary: 4000,
-    status: 'نشط',
-    hireDate: '2023-05-10',
-    notes: 'صيانة الآبار ومضخات الديزل'
+    name: 'م أحمد سمير',
+    role: 'مهندس',
+    phone: '01028425407',
+    nationalId: '29511221201454',
+    salary: 7975,
+    status: 'منتظم',
+    hireDate: '2022',
+    notes: 'مهندس زراعي وفني قطيع',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
   },
   {
     id: 'EMP-03',
-    name: 'سعيد حسن إبراهيم',
-    role: 'فني الوقاية والتسميد',
-    phone: '0541122334',
-    salary: 3500,
-    status: 'نشط',
-    hireDate: '2023-08-01',
-    notes: 'مسؤول مخزن الأسمدة والمبيدات'
+    name: 'أ محمد حيلة',
+    role: 'مشرف',
+    phone: '01063224636',
+    nationalId: '27306271201315',
+    salary: 9490,
+    status: 'منتظم',
+    hireDate: '1995',
+    notes: 'مشرف عام المحطة',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
   },
   {
     id: 'EMP-04',
-    name: 'عثمان عبد الله',
-    role: 'عامل زراعي وسائق جرار',
-    phone: '0563344556',
-    salary: 2800,
-    status: 'نشط',
-    hireDate: '2024-02-20',
-    notes: 'حرث ونقل المحاصيل'
+    name: 'طلبة عبد الجليل',
+    role: 'عامل أمن',
+    phone: '01026419915',
+    nationalId: '26508051202297',
+    salary: 6260,
+    status: 'منتظم',
+    hireDate: '2010',
+    notes: 'حراسة البوابة والمخازن',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
   },
   {
     id: 'EMP-05',
-    name: 'عمر المختار',
-    role: 'حارس المزرعة والمخازن',
-    phone: '0527788990',
-    salary: 2500,
-    status: 'إجازة',
-    hireDate: '2023-11-05',
-    notes: 'في إجازة سنوية'
+    name: 'أحمد رجب رشوان',
+    role: 'عامل',
+    phone: '01211556251',
+    nationalId: '29602012604598',
+    salary: 5820,
+    status: 'منتظم',
+    hireDate: '2024',
+    notes: 'عنبر التربية ورعاية القطيع',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
+  },
+  {
+    id: 'EMP-06',
+    name: 'بهاء الدين رفاعي',
+    role: 'عامل',
+    phone: '01016381829',
+    nationalId: '30003082600217',
+    salary: 5565,
+    status: 'منتظم',
+    hireDate: '2025',
+    notes: 'خدمة وجمع بيض التفريخ',
+    workDays: 30,
+    raisePercentage: 0,
+    penalties: 0
+  },
+  {
+    id: 'EMP-07',
+    name: 'أحمد فتحي',
+    role: 'عامل',
+    phone: '01210589578',
+    nationalId: '30006102602075',
+    salary: 5565,
+    status: 'ترك العمل',
+    hireDate: '2015',
+    leaveDate: '2026-01-01',
+    notes: 'تسوية مستحقات منتهية'
   }
 ];
 
@@ -70,6 +116,8 @@ export const INITIAL_DROPDOWNS: DropdownOption[] = [
   { id: 'cat-6', type: 'category', name: 'رواتب موظفين ثابتة', description: 'مسيرات الرواتب الشهرية' },
   { id: 'cat-7', type: 'category', name: 'مصاريف معيشة وإعاشة عمال', description: 'تغذية، مياه شرب، غاز' },
   { id: 'cat-8', type: 'category', name: 'نقل وشحن ومهمات', description: 'أجور شحن ومستلزمات عامة' },
+  { id: 'cat-9', type: 'category', name: 'سلف عاملين', description: 'سلف نقدية تخصم من الراتب' },
+  { id: 'cat-10', type: 'category', name: 'مبيعات بيض ومنتجات للعاملين', description: 'مشتروات بيض كسر ودبل وفرزة تخصم من الراتب' },
 
   // طرق الدفع (Payment Methods)
   { id: 'pay-1', type: 'payment_method', name: 'نقداً من العهدة النقدية', description: 'صرف مباشر من الخزينة النقدية' },
@@ -77,6 +125,7 @@ export const INITIAL_DROPDOWNS: DropdownOption[] = [
   { id: 'pay-3', type: 'payment_method', name: 'شيك مصرفي', description: 'شيكات المزرعة' },
   { id: 'pay-4', type: 'payment_method', name: 'بطاقة مدى / شبكة', description: 'دفع بالبطاقة' },
   { id: 'pay-5', type: 'payment_method', name: 'إيراد مبيعات نقدي', description: 'إيداع إيراد مبيعات مباشر' },
+  { id: 'pay-6', type: 'payment_method', name: 'آجل للعاملين (خصم من الراتب)', description: 'مشتروات بيض ومنتجات تخصم من الراتب' },
 
   // الأمناء (Custodians)
   { id: 'cust-1', type: 'custodian', name: 'عهدة مهندس أحمد علي (المهندس)', description: 'العهدة المالية الرئيسية للمزرعة' },

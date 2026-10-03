@@ -97,6 +97,32 @@ export const JournalTab: React.FC<JournalTabProps> = ({
 
     const selectedEmp = state.employees.find(emp => emp.id === employeeId);
 
+    // Determine debit and credit accounts based on transaction characteristics
+    let finalDebitAccount = 'المصروفات';
+    let finalCreditAccount = paymentMethod.includes('عهدة') ? 'العهدة' : 'النقدية';
+
+    if (type === 'قبض عهدة') {
+      finalDebitAccount = 'العهدة';
+      finalCreditAccount = 'المكتب الرئيسي';
+    } else if (type === 'مبيعات') {
+      if (paymentMethod.includes('آجل') || category.includes('للعاملين') || (isInternal && employeeId)) {
+        finalDebitAccount = 'مشتروات عاملين (خصم راتب)';
+        finalCreditAccount = 'المبيعات';
+      } else {
+        finalDebitAccount = 'النقدية';
+        finalCreditAccount = 'المبيعات';
+      }
+    } else if (type === 'راتب') {
+      finalDebitAccount = 'المرتبات';
+      finalCreditAccount = paymentMethod.includes('عهدة') ? 'العهدة' : 'النقدية';
+    } else if (category.includes('سلف') || (isInternal && statement.includes('سلف'))) {
+      finalDebitAccount = 'سلف عاملين';
+      finalCreditAccount = paymentMethod.includes('عهدة') ? 'العهدة' : 'النقدية';
+    } else if (category.includes('معيشة') || category.includes('ميس') || statement.includes('ميس') || sector.includes('ميس')) {
+      finalDebitAccount = 'الميس';
+      finalCreditAccount = paymentMethod.includes('عهدة') ? 'العهدة' : 'النقدية';
+    }
+
     if (editingId) {
       // Edit existing entry
       setState(prev => ({
@@ -112,6 +138,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
           quantity: quantity,
           unitPrice: unitPrice,
           paymentMethod,
+          debitAccount: finalDebitAccount,
+          creditAccount: finalCreditAccount,
           custodian,
           employeeId: employeeId || undefined,
           employeeName: selectedEmp?.name || undefined,
@@ -134,6 +162,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({
         quantity: quantity,
         unitPrice: unitPrice,
         paymentMethod,
+        debitAccount: finalDebitAccount,
+        creditAccount: finalCreditAccount,
         custodian,
         employeeId: employeeId || undefined,
         employeeName: selectedEmp?.name || undefined,

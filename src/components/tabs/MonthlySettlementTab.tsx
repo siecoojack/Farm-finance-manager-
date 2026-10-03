@@ -10,11 +10,12 @@ import {
   PieChart, 
   Save, 
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { AppState } from '../../types';
 import { buildWhatsAppReportMessage, shareViaWhatsApp, shareViaEmail, triggerPrintReport } from '../../utils/sharing';
-import { exportFarmToExcel } from '../../utils/excel';
+import { exportOfficialOfficeExcel, exportFullFarmBackupExcel } from '../../utils/excel';
 
 interface MonthlySettlementTabProps {
   state: AppState;
@@ -66,12 +67,29 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
     .filter(e => e.type === 'راتب')
     .reduce((sum, e) => sum + e.amount, 0);
 
+  // Link to official payroll from regular employees if no explicit salary journal vouchers entered
+  const regularEmployees = state.employees.filter(e => e.status === 'منتظم' || e.status === 'نشط');
+  const officialPayrollTotal = regularEmployees.reduce((sum, emp) => {
+    const workDays = emp.workDays !== undefined ? emp.workDays : 30;
+    const raiseAmount = Math.floor(emp.salary * ((emp.raisePercentage || 0) / 100));
+    const salaryAfterRaise = emp.salary + raiseAmount;
+    const isWorker = emp.role.includes('عامل');
+    const vacationAllowance = emp.vacationAllowanceOverride !== undefined 
+      ? emp.vacationAllowanceOverride 
+      : (isWorker ? Math.floor(Math.floor(workDays / 7) * (salaryAfterRaise / 30) / 5) * 5 : 0);
+    const penalties = emp.penalties || 0;
+    const officialNet = Math.round((salaryAfterRaise + vacationAllowance - penalties) / 5) * 5;
+    return sum + officialNet;
+  }, 0);
+
+  const effectiveSalaries = calculatedSalaries > 0 ? calculatedSalaries : officialPayrollTotal;
+
   // Add Official Mies logic for calculation
-  const officialMiesTotal = isOfficialView ? (state.employees.length * state.officialMiesPerPerson) : 0;
+  const officialMiesTotal = isOfficialView ? (regularEmployees.length * (state.officialMiesPerPerson || 1000)) : 0;
   const totalExpensesWithMies = calculatedExpenses + officialMiesTotal;
   
   const totalAvailable = openingBal + calculatedAdvances;
-  const totalOutflows = totalExpensesWithMies + calculatedSalaries;
+  const totalOutflows = totalExpensesWithMies + effectiveSalaries;
   const closingBal = totalAvailable - totalOutflows;
   
   // Category breakdown for percentage visualizer
@@ -99,8 +117,8 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
       openingBalance: Number(openingBalance),
       totalAdvancesReceived: calculatedAdvances,
       totalExpenses: calculatedExpenses,
-      totalSalaries: calculatedSalaries,
-      closingBalance: Number(openingBalance) + calculatedAdvances - (calculatedExpenses + calculatedSalaries),
+      totalSalaries: effectiveSalaries,
+      closingBalance: Number(openingBalance) + calculatedAdvances - (calculatedExpenses + effectiveSalaries),
       notes: reportNotes,
       status: reportStatus,
       updatedAt: new Date().toISOString()
@@ -147,24 +165,7 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
   };
 
   const handleExcelExport = () => {
-    exportFarmToExcel(
-      currentMonth,
-      state.employees,
-      visibleEntries, // Changed from state.journalEntries to visibleEntries
-      state.dropdowns,
-      {
-        ...settlement,
-        custodianName,
-        openingBalance,
-        totalAdvancesReceived: calculatedAdvances,
-        totalExpenses: calculatedExpenses,
-        totalSalaries: calculatedSalaries,
-        closingBalance: closingBal,
-        notes: reportNotes,
-        status: reportStatus,
-        updatedAt: new Date().toISOString()
-      }
-    );
+    exportOfficialOfficeExcel(state);
   };
 
   return (
@@ -227,23 +228,32 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
 
           <div className="relative group">
             <button
+              onClick={() => exportOfficialOfficeExcel(state)}
               className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition"
             >
               <Download className="w-4 h-4" />
               <span>تصدير أكسيل</span>
             </button>
-            <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 w-48 z-10 hidden group-hover:block">
+            <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 w-60 z-20 hidden group-hover:block text-right">
                <button
-                  onClick={() => { setIsOfficialView(true); setTimeout(handleExcelExport, 100); }}
-                  className="w-full text-right px-4 py-2 text-xs hover:bg-emerald-50 text-slate-800 font-bold"
+                  onClick={() => exportOfficialOfficeExcel(state)}
+                  className="w-full text-right px-4 py-2.5 text-xs hover:bg-emerald-50 text-emerald-800 font-bold flex items-center gap-2"
                >
-                  تصدير تسوية للمكتب (رسمي)
+                  <Building2 className="w-4 h-4 text-emerald-700" />
+                  <div>
+                    <span className="block font-black">ملف المكتب الرئيسي (الـ 5 ورقات)</span>
+                    <span className="text-[10px] text-slate-500 block">تسوية، مرتبات، مصروفات، مبيعات، جرد</span>
+                  </div>
                </button>
                <button
-                  onClick={() => { setIsOfficialView(false); setTimeout(handleExcelExport, 100); }}
-                  className="w-full text-right px-4 py-2 text-xs hover:bg-rose-50 text-rose-800 font-bold"
+                  onClick={() => exportFullFarmBackupExcel(state)}
+                  className="w-full text-right px-4 py-2.5 text-xs hover:bg-slate-50 text-slate-700 font-bold flex items-center gap-2 border-t border-slate-100"
                >
-                  تصدير الكل (داخلي)
+                  <FileSpreadsheet className="w-4 h-4 text-slate-500" />
+                  <div>
+                    <span className="block font-black">أرشيف المزرعة الداخلي الشامل</span>
+                    <span className="text-[10px] text-slate-500 block">نسخة احتياطية (اليومية، السلف، المشتروات)</span>
+                  </div>
                </button>
             </div>
           </div>
@@ -352,10 +362,10 @@ export const MonthlySettlementTab: React.FC<MonthlySettlementTabProps> = ({ stat
                   <td className="p-3 font-semibold text-rose-900">4. يخصم: إجمالي المصروفات التشغيلية للمزرعة (Expenses)</td>
                   <td className="p-3 text-left font-bold font-mono text-rose-700">-{calculatedExpenses.toLocaleString('ar-EG')} ج.م</td>
                 </tr>
-                {calculatedSalaries > 0 && (
+                {effectiveSalaries > 0 && (
                   <tr className="bg-blue-50/50">
-                    <td className="p-3 font-semibold text-blue-900">5. يخصم: إجمالي مسيرات الرواتب المدفوعة (Salaries Paid)</td>
-                    <td className="p-3 text-left font-bold font-mono text-blue-700">-{calculatedSalaries.toLocaleString('ar-EG')} ج.م</td>
+                    <td className="p-3 font-semibold text-blue-900">5. يخصم: إجمالي مسيرات الرواتب المعتمدة (Salaries Approved)</td>
+                    <td className="p-3 text-left font-bold font-mono text-blue-700">-{effectiveSalaries.toLocaleString('ar-EG')} ج.م</td>
                   </tr>
                 )}
                 <tr className="bg-emerald-900 text-white font-black text-sm">

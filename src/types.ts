@@ -11,10 +11,16 @@ export interface Employee {
   name: string;
   role: string;
   phone: string;
-  salary: number;
-  status: 'نشط' | 'إجازة' | 'موقوف' | 'مستقيل';
+  nationalId?: string; // الرقم القومي (14 رقم)
+  salary: number; // الراتب الأساسي
+  status: 'منتظم' | 'نشط' | 'إجازة' | 'موقوف' | 'ترك العمل' | 'مستقيل';
   notes?: string;
   hireDate?: string;
+  leaveDate?: string;
+  workDays?: number; // أيام العمل بالشهر (افتراضي 30 أو شهر كامل)
+  raisePercentage?: number; // نسبة الزيادة %
+  penalties?: number; // غياب وجزاءات وخصومات رسمية
+  vacationAllowanceOverride?: number; // بدل إجازة مخصص إن رغب في تجاوزه
   advanceBalance?: number;
   miesDeduction?: number;
   salaryAdjustments?: SalaryAdjustment[];

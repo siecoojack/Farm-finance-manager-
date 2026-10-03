@@ -60,6 +60,15 @@ export const SalesTab: React.FC<SalesTabProps> = ({ state, setState }) => {
       setShowModal(true);
   }
 
+  const deleteGiftCredit = (id: string) => {
+    if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+      setState(prev => ({
+        ...prev,
+        salesEntries: prev.salesEntries.filter(item => item.id !== id)
+      }));
+    }
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">

@@ -15,7 +15,7 @@ import { ShareModal } from './components/modals/ShareModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { AppState, JournalEntry } from './types';
 import { loadAppState, saveAppState } from './utils/storage';
-import { exportFarmToExcel } from './utils/excel';
+import { exportOfficialOfficeExcel } from './utils/excel';
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -28,14 +28,7 @@ export default function App() {
   }, [state]);
 
   const handleExportExcel = () => {
-    const currentSettlement = state.settlements[state.currentMonth];
-    exportFarmToExcel(
-      state.currentMonth,
-      state.employees,
-      state.journalEntries,
-      state.dropdowns,
-      currentSettlement
-    );
+    exportOfficialOfficeExcel(state);
   };
 
   const renderActiveTabContent = () => {
