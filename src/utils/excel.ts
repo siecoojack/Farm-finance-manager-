@@ -61,8 +61,32 @@ export function exportOfficialOfficeExcel(state: AppState) {
   const officialMiesAllowance = regularEmployees.length * (state.officialMiesPerPerson || 1000);
   const totalOfficialExpenses = operationalExpensesTotal + officialMiesAllowance;
 
-  // 3. Official Cash Sales Totals
-  const cashSalesEntries = currentMonthEntries.filter(e => e.type === 'مبيعات');
+  // 3. Official Cash Sales Totals (from Journal and Sales Tab)
+  const journalSales = currentMonthEntries.filter(e => e.type === 'مبيعات');
+  const tabSales = (state.salesEntries || [])
+    .filter(s => s.monthKey === monthKey && !s.isGift)
+    .map(s => ({
+      id: s.id,
+      date: s.date,
+      voucherNo: `SALE-${s.id.slice(-4)}`,
+      category: 'مبيعات بيض ومنتجات',
+      sector: 'المبيعات',
+      amount: s.total,
+      type: 'مبيعات' as const,
+      paymentMethod: 'نقداً',
+      debitAccount: 'النقدية',
+      creditAccount: 'المبيعات',
+      custodian: 'أمين العهدة',
+      statement: s.statement,
+      quantity: s.quantity,
+      unitPrice: s.unitPrice,
+      notes: s.recipient ? `العميل: ${s.recipient}` : '',
+      monthKey: s.monthKey,
+      createdAt: new Date().toISOString(),
+      isInternal: false
+    }));
+
+  const cashSalesEntries = [...journalSales, ...tabSales];
   const totalCashSales = cashSalesEntries.reduce((sum, e) => sum + e.amount, 0);
 
   // 4. Advances Received from Head Office (العهدة الواردة على دفعات)
@@ -184,14 +208,17 @@ export function exportOfficialOfficeExcel(state: AppState) {
     'رقم السند': e.voucherNo,
     'البيان (الصنف المباع)': e.statement,
     'العدد / الكمية': e.quantity || 1,
-    'سعر الوحدة': e.unitPrice || e.amount,
+    'سعر الوحدة': e.unitPrice || (e.quantity ? Math.round(e.amount / e.quantity) : e.amount),
     'القيمة الإجمالية (ج.م)': e.amount,
     'ملاحظات': e.notes || 'مبيعات نقدية مستبعدات'
   }));
 
-  const wsSales = XLSX.utils.json_to_sheet(salesRows.length > 0 ? salesRows : [
-    { 'م': 1, 'التاريخ': `${monthKey}-01`, 'رقم السند': 'SAL-01', 'البيان (الصنف المباع)': 'مبيعات بيض كسر ودبل وشكاير', 'العدد / الكمية': 0, 'سعر الوحدة': 0, 'القيمة الإجمالية (ج.م)': 0, 'ملاحظات': '-' }
-  ]);
+  const wsSales = salesRows.length > 0 
+    ? XLSX.utils.json_to_sheet(salesRows)
+    : XLSX.utils.aoa_to_sheet([
+        ['م', 'التاريخ', 'رقم السند', 'البيان (الصنف المباع)', 'العدد / الكمية', 'سعر الوحدة', 'القيمة الإجمالية (ج.م)', 'ملاحظات'],
+        ['-', '-', '-', 'لا توجد مبيعات نقدية مسجلة لهذا الشهر', 0, 0, 0, '-']
+      ]);
   XLSX.utils.book_append_sheet(wb, wsSales, 'المبيعات');
 
   // -------------------------------------------------------------
@@ -223,11 +250,7 @@ export function exportOfficialOfficeExcel(state: AppState) {
       ]);
     });
   } else {
-    // Default realistic breeder feed stock layout
-    inventoryAoa.push([1, `${monthKey}-01`, 'علف بادي أمهات (إناث)', 'طن', 2.5, 10.0, 9.5, 3.0]);
-    inventoryAoa.push([2, `${monthKey}-01`, 'علف نامي أمهات (إناث)', 'طن', 4.0, 15.0, 14.0, 5.0]);
-    inventoryAoa.push([3, `${monthKey}-01`, 'علف إنتاج بيض تفريخ (إناث)', 'طن', 8.0, 25.0, 24.5, 8.5]);
-    inventoryAoa.push([4, `${monthKey}-01`, 'علف أمهات ديوك مخصص', 'طن', 1.0, 3.0, 2.8, 1.2]);
+    inventoryAoa.push(['-', '-', 'لا توجد حركات علف مسجلة لهذا الشهر', '-', 0, 0, 0, 0]);
   }
 
   inventoryAoa.push(['']);
@@ -248,12 +271,7 @@ export function exportOfficialOfficeExcel(state: AppState) {
       ]);
     });
   } else {
-    // Default realistic breeder medicine stock layout
-    inventoryAoa.push([1, `${monthKey}-01`, 'فيتامين هـ + سيلينيوم (للخصوبة)', 'لتر', 5, 12, 10, 7]);
-    inventoryAoa.push([2, `${monthKey}-01`, 'أموكسيسيلين 20% (مضاد حيوي)', 'كجم', 3, 8, 7, 4]);
-    inventoryAoa.push([3, `${monthKey}-01`, 'مضاد سموم فطرية سائل', 'لتر', 4, 10, 9, 5]);
-    inventoryAoa.push([4, `${monthKey}-01`, 'أملاح معدنية وفيتامين AD3E', 'لتر', 6, 15, 14, 7]);
-    inventoryAoa.push([5, `${monthKey}-01`, 'مطهر بيودين مركز للتطهير', 'لتر', 10, 25, 20, 15]);
+    inventoryAoa.push(['-', '-', 'لا توجد حركات أدوية مسجلة لهذا الشهر', '-', 0, 0, 0, 0]);
   }
 
   const wsInventory = XLSX.utils.aoa_to_sheet(inventoryAoa);
@@ -332,7 +350,79 @@ export function exportFullFarmBackupExcel(state: AppState) {
   const wsInternalPayroll = XLSX.utils.json_to_sheet(internalPayrollRows);
   XLSX.utils.book_append_sheet(wb, wsInternalPayroll, 'مسير الرواتب الداخلي');
 
-  // Sheet 3: قاعدة بيانات العاملين والإعدادات
+  // Sheet 3: مصروفات الميس الفعلي وإعاشة العاملين (سجل تحليلي داخلي)
+  const messEntries = monthEntries.filter(e => 
+    e.category.includes('معيشة') || 
+    e.category.includes('ميس') || 
+    e.category.includes('إعاشة') || 
+    e.category.includes('طعام') || 
+    e.debitAccount === 'الميس' || 
+    e.statement.includes('ميس') || 
+    e.statement.includes('معيشة') || 
+    e.statement.includes('خضار') || 
+    e.statement.includes('لحوم') || 
+    e.statement.includes('طعام') || 
+    e.statement.includes('تموين') || 
+    e.statement.includes('عيش') ||
+    e.sector.includes('ميس')
+  );
+
+  const messRows = messEntries.map((e, idx) => ({
+    'م': idx + 1,
+    'التاريخ': e.date,
+    'رقم السند': e.voucherNo,
+    'البيان وتفاصيل المشتروات': e.statement,
+    'العدد / الكمية': (e.quantity && e.quantity > 0) ? e.quantity : '-',
+    'سعر الوحدة': (e.unitPrice && e.unitPrice > 0) ? e.unitPrice : ((e.quantity && e.quantity > 0) ? Math.round(e.amount / e.quantity) : '-'),
+    'القيمة الإجمالية (ج.م)': e.amount,
+    'القائم بالشراء / ملاحظات': e.notes || e.employeeName || e.custodian || '-'
+  }));
+
+  const totalMessSpent = messEntries.reduce((sum, e) => sum + e.amount, 0);
+  const officialMiesAllowance = regularEmployees.length * (state.officialMiesPerPerson || 1000);
+  const messDifference = totalMessSpent - officialMiesAllowance;
+
+  if (messRows.length > 0) {
+    messRows.push({
+      'م': messRows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': 'الإجمالي الفعلي',
+      'البيان وتفاصيل المشتروات': 'إجمالي المنصرف الفعلي على الميس',
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': totalMessSpent,
+      'القائم بالشراء / ملاحظات': 'المصروف الفعلي'
+    });
+    messRows.push({
+      'م': messRows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': 'المعتمد الرسمي',
+      'البيان وتفاصيل المشتروات': `الميس الرسمي المعتمد (${regularEmployees.length} أفراد × ${state.officialMiesPerPerson || 1000} ج.م)`,
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': officialMiesAllowance,
+      'القائم بالشراء / ملاحظات': 'مخصص الشركة'
+    });
+    messRows.push({
+      'م': messRows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': messDifference > 0 ? 'عجز الميس' : 'وفر الميس',
+      'البيان وتفاصيل المشتروات': messDifference > 0 
+        ? `عجز ميس يخصم بالمسير الداخلي (${regularEmployees.length > 0 ? Math.round(messDifference / regularEmployees.length) : 0} ج.م/فرد)` 
+        : 'وفر في ميزانية الميس',
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': Math.abs(messDifference),
+      'القائم بالشراء / ملاحظات': messDifference > 0 ? 'عجز يتحمله العمال' : 'وفر مالي'
+    });
+  }
+
+  const wsMess = XLSX.utils.json_to_sheet(messRows.length > 0 ? messRows : [
+    { 'م': 1, 'التاريخ': `${monthKey}-01`, 'رقم السند': '-', 'البيان وتفاصيل المشتروات': 'لا توجد مصروفات ميس مسجلة لهذا الشهر', 'العدد / الكمية': '-', 'سعر الوحدة': '-', 'القيمة الإجمالية (ج.م)': 0, 'القائم بالشراء / ملاحظات': '-' }
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsMess, 'مصروفات الميس الفعلي');
+
+  // Sheet 4: قاعدة بيانات العاملين والإعدادات
   const empRows = state.employees.map(emp => ({
     'كود الموظف': emp.id,
     'الاسم الكامل': emp.name,
@@ -350,6 +440,75 @@ export function exportFullFarmBackupExcel(state: AppState) {
 
   const fileName = `أرشيف_المزرعة_الداخلي_الشامل_${monthKey}.xlsx`;
   XLSX.writeFile(wb, fileName);
+}
+
+/**
+ * Standalone Export for Mess Expenses (كشف مصروفات الميس الفعلي)
+ */
+export function exportMessExpensesExcel(
+  monthKey: string,
+  messEntries: JournalEntry[],
+  regularEmployeesCount: number,
+  officialMiesPerPerson: number
+) {
+  const wb = XLSX.utils.book_new();
+  const rows: any[] = messEntries.map((e, idx) => ({
+    'م': idx + 1,
+    'التاريخ': e.date,
+    'رقم السند': e.voucherNo,
+    'البيان وتفاصيل المشتروات': e.statement,
+    'العدد / الكمية': (e.quantity && e.quantity > 0) ? e.quantity : '-',
+    'سعر الوحدة': (e.unitPrice && e.unitPrice > 0) ? e.unitPrice : ((e.quantity && e.quantity > 0) ? Math.round(e.amount / e.quantity) : '-'),
+    'القيمة الإجمالية (ج.م)': e.amount,
+    'القائم بالشراء / ملاحظات': e.notes || e.employeeName || e.custodian || '-'
+  }));
+
+  const totalSpent = messEntries.reduce((sum, e) => sum + e.amount, 0);
+  const officialTotal = regularEmployeesCount * (officialMiesPerPerson || 1000);
+  const diff = totalSpent - officialTotal;
+
+  if (rows.length > 0) {
+    rows.push({
+      'م': rows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': 'الإجمالي الفعلي',
+      'البيان وتفاصيل المشتروات': 'إجمالي المنصرف الفعلي على الميس',
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': totalSpent,
+      'القائم بالشراء / ملاحظات': 'المصروف الفعلي'
+    });
+
+    rows.push({
+      'م': rows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': 'المعتمد الرسمي',
+      'البيان وتفاصيل المشتروات': `الميس الرسمي المعتمد (${regularEmployeesCount} أفراد × ${officialMiesPerPerson} ج.م)`,
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': officialTotal,
+      'القائم بالشراء / ملاحظات': 'مخصص الشركة'
+    });
+
+    rows.push({
+      'م': rows.length + 1,
+      'التاريخ': '-',
+      'رقم السند': diff > 0 ? 'عجز الميس' : 'وفر الميس',
+      'البيان وتفاصيل المشتروات': diff > 0 
+        ? `عجز ميس يخصم على العاملين (نصيب الفرد: ${regularEmployeesCount > 0 ? Math.round(diff / regularEmployeesCount) : 0} ج.م)` 
+        : 'وفر في ميزانية الميس',
+      'العدد / الكمية': '-',
+      'سعر الوحدة': '-',
+      'القيمة الإجمالية (ج.م)': Math.abs(diff),
+      'القائم بالشراء / ملاحظات': diff > 0 ? 'خصم مسير داخلي' : 'فائض'
+    });
+  }
+
+  const ws = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [
+    { 'م': 1, 'التاريخ': `${monthKey}-01`, 'رقم السند': '-', 'البيان وتفاصيل المشتروات': 'لا توجد مصروفات ميس مسجلة لهذا الشهر', 'العدد / الكمية': '-', 'سعر الوحدة': '-', 'القيمة الإجمالية (ج.م)': 0, 'القائم بالشراء / ملاحظات': '-' }
+  ]);
+  XLSX.utils.book_append_sheet(wb, ws, 'مصروفات الميس الفعلي');
+  XLSX.writeFile(wb, `كشف_مصروفات_الميس_الفعلي_${monthKey}.xlsx`);
 }
 
 /**

@@ -24,9 +24,12 @@ import {
   ArrowUpRight,
   Share2,
   FileText,
-  BadgeCheck
+  BadgeCheck,
+  Download
 } from 'lucide-react';
 import { AppState, Employee, JournalEntry } from '../../types';
+import { exportMessExpensesExcel } from '../../utils/excel';
+import { shareViaWhatsApp } from '../../utils/sharing';
 
 interface EmployeesTabProps {
   state: AppState;
@@ -37,10 +40,11 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
   // Navigation Sub-tabs:
   // 1. 'official_payroll' -> مسير المرتبات الرسمي المعتمد للمكتب
   // 2. 'internal_payroll' -> مسير الرواتب الداخلي للمزرعة (تقبيض العمال شامل السلف، المبيعات، والميس)
-  // 3. 'advances' -> دفتر سلف العاملين
+  // 3. 'mess_expenses' -> مصروفات الميس الفعلي وإعاشة العاملين (حساب الفارق عن الميس الرسمي)
   // 4. 'purchases' -> سجل مشتروات البيض والمنتجات بالآجل للعاملين
-  // 5. 'database' -> قاعدة بيانات وسجل العاملين
-  const [subTab, setSubTab] = useState<'official_payroll' | 'internal_payroll' | 'advances' | 'purchases' | 'database'>('official_payroll');
+  // 5. 'advances' -> دفتر سلف العاملين
+  // 6. 'database' -> قاعدة بيانات وسجل العاملين
+  const [subTab, setSubTab] = useState<'official_payroll' | 'internal_payroll' | 'mess_expenses' | 'advances' | 'purchases' | 'database'>('official_payroll');
 
   // Employee Form State (Add / Edit)
   const [showEmpForm, setShowEmpForm] = useState(false);
@@ -75,6 +79,16 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
 
   // Employee Purchase Details Statement Modal State
   const [viewingPurchaseEmp, setViewingPurchaseEmp] = useState<Employee | null>(null);
+
+  // Quick Mess Expense Modal State (مصروفات الميس الفعلي)
+  const [showMessModal, setShowMessModal] = useState(false);
+  const [messDate, setMessDate] = useState(new Date().toISOString().split('T')[0]);
+  const [messStatement, setMessStatement] = useState('');
+  const [messQuantity, setMessQuantity] = useState<number>(0);
+  const [messUnitPrice, setMessUnitPrice] = useState<number>(0);
+  const [messAmount, setMessAmount] = useState<string>('');
+  const [messNotes, setMessNotes] = useState('');
+  const [messPaymentMethod, setMessPaymentMethod] = useState('نقداً من العهدة النقدية');
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -137,8 +151,16 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
   const actualMessEntries = currentMonthEntries.filter(e => 
     e.category.includes('معيشة') || 
     e.category.includes('ميس') || 
+    e.category.includes('إعاشة') || 
+    e.category.includes('طعام') || 
     e.debitAccount === 'الميس' || 
     e.statement.includes('ميس') || 
+    e.statement.includes('معيشة') || 
+    e.statement.includes('خضار') || 
+    e.statement.includes('لحوم') || 
+    e.statement.includes('طعام') || 
+    e.statement.includes('تموين') || 
+    e.statement.includes('عيش') ||
     e.sector.includes('ميس')
   );
   const totalActualMessSpent = actualMessEntries.reduce((sum, e) => sum + e.amount, 0);
@@ -421,6 +443,95 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
     setTimeout(() => setActionSuccessMsg(null), 3500);
   };
 
+  // Submit Quick Mess Expense to Journal
+  const handleSaveMessExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalAmount = Number(messAmount) || (messQuantity * messUnitPrice);
+    if (!messStatement.trim() || finalAmount <= 0) {
+      alert('يرجى كتابة بيان الصنف وقيمة المبلغ بدقة.');
+      return;
+    }
+
+    const newMessEntry: JournalEntry = {
+      id: `JRN-${Date.now()}`,
+      date: messDate,
+      voucherNo: `MIES-${String(currentMonthEntries.length + 1).padStart(3, '0')}`,
+      type: 'مصروف',
+      category: 'مصاريف معيشة وإعاشة عمال',
+      sector: 'الإدارة والعمالة والخدمات',
+      amount: finalAmount,
+      debitAccount: 'الميس',
+      creditAccount: messPaymentMethod.includes('عهدة') ? 'العهدة' : 'النقدية',
+      custodian: 'أمين العهدة / مدير المزرعة',
+      statement: messStatement.trim(),
+      quantity: messQuantity > 0 ? messQuantity : undefined,
+      unitPrice: messUnitPrice > 0 ? messUnitPrice : undefined,
+      notes: messNotes.trim() || 'شراء مستلزمات طعام وميس المزرعة',
+      monthKey: state.currentMonth,
+      createdAt: new Date().toISOString(),
+      paymentMethod: messPaymentMethod,
+      isInternal: false
+    };
+
+    setState(prev => ({
+      ...prev,
+      journalEntries: [newMessEntry, ...prev.journalEntries]
+    }));
+
+    setShowMessModal(false);
+    setMessStatement('');
+    setMessQuantity(0);
+    setMessUnitPrice(0);
+    setMessAmount('');
+    setMessNotes('');
+
+    setActionSuccessMsg(`تم تسجيل مصروف الميس بنجاح (${finalAmount.toLocaleString('ar-EG')} ج.م) وقيده في اليومية وحسابات الفارق!`);
+    setTimeout(() => setActionSuccessMsg(null), 3500);
+  };
+
+  // Delete Mess Voucher
+  const handleDeleteMessEntry = (id: string) => {
+    if (confirm('هل أنت متأكد من حذف هذا السند من مصروفات الميس واليومية العامة؟')) {
+      setState(prev => ({
+        ...prev,
+        journalEntries: prev.journalEntries.filter(e => e.id !== id)
+      }));
+      setActionSuccessMsg('تم حذف السند بنجاح من مصروفات الميس واليومية العامة.');
+      setTimeout(() => setActionSuccessMsg(null), 3500);
+    }
+  };
+
+  // Standalone Export for Mess Sheet
+  const handleExportMessExcel = () => {
+    exportMessExpensesExcel(
+      state.currentMonth,
+      actualMessEntries,
+      regularEmployees.length,
+      state.officialMiesPerPerson || 1000
+    );
+  };
+
+  // Standalone WhatsApp Share for Mess Sheet
+  const handleShareMessWhatsApp = () => {
+    const diff = totalActualMessSpent - officialMiesBudget;
+    const diffText = diff > 0 
+      ? `عجز ميس: +${diff.toLocaleString('ar-EG')} ج.م (نصيب الفرد: ${perPersonExcessMess.toLocaleString('ar-EG')} ج.م)`
+      : `وفر ميس: ${Math.abs(diff).toLocaleString('ar-EG')} ج.م (ضمن الميزانية)`;
+    
+    const msg = `*تقرير مصروفات الميس الفعلي - مزرعة الزريقي*
+📅 شهر: ${state.currentMonth}
+👥 عدد العمال المنتظمين: ${regularEmployees.length} موظف
+--------------------------------
+🍲 إجمالي المنصرف الفعلي: ${totalActualMessSpent.toLocaleString('ar-EG')} ج.م
+🏢 الميس الرسمي المعتمد: ${officialMiesBudget.toLocaleString('ar-EG')} ج.م (${regularEmployees.length} × ${state.officialMiesPerPerson || 1000} ج.م)
+📊 الفارق: ${diffText}
+📝 عدد الحركات المقيدة: ${actualMessEntries.length} حركة
+--------------------------------
+🔒 كشف داخلي رقابي لإدارة المزرعة`;
+
+    shareViaWhatsApp(msg);
+  };
+
   // Filtered employees for Database view
   const filteredEmployees = state.employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -510,8 +621,8 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
           </div>
         </div>
 
-        {/* 5 Core Sub-tabs matching the Farm Architecture */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 print:hidden">
+        {/* 6 Core Sub-tabs matching the Farm Architecture */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 print:hidden">
           
           <button
             onClick={() => setSubTab('official_payroll')}
@@ -552,6 +663,25 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
           </button>
 
           <button
+            onClick={() => setSubTab('mess_expenses')}
+            className={`p-3 rounded-xl border text-right transition flex items-center gap-2.5 ${
+              subTab === 'mess_expenses'
+                ? 'bg-emerald-800 text-white border-emerald-900 shadow-md ring-2 ring-emerald-500/20'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+            }`}
+          >
+            <div className={`p-2 rounded-lg ${subTab === 'mess_expenses' ? 'bg-emerald-700 text-white' : 'bg-rose-100 text-rose-800'}`}>
+              <Utensils className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="block text-xs font-black">3. مصروفات الميس الفعلي</span>
+              <span className={`text-[10px] block ${subTab === 'mess_expenses' ? 'text-emerald-200' : 'text-slate-500'}`}>
+                إعاشة وطعام (حساب الفارق)
+              </span>
+            </div>
+          </button>
+
+          <button
             onClick={() => setSubTab('purchases')}
             className={`p-3 rounded-xl border text-right transition flex items-center gap-2.5 ${
               subTab === 'purchases'
@@ -563,7 +693,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
               <ShoppingBag className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-black">3. مشتروات العاملين</span>
+              <span className="block text-xs font-black">4. مشتروات العاملين</span>
               <span className={`text-[10px] block ${subTab === 'purchases' ? 'text-emerald-200' : 'text-slate-500'}`}>
                 بيض وفرزة بالآجل مع كشف حساب
               </span>
@@ -582,7 +712,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
               <HandCoins className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-black">4. دفتر سلف العاملين</span>
+              <span className="block text-xs font-black">5. دفتر سلف العاملين</span>
               <span className={`text-[10px] block ${subTab === 'advances' ? 'text-emerald-200' : 'text-slate-500'}`}>
                 سلف نقدية من اليومية
               </span>
@@ -601,7 +731,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
               <FileSpreadsheet className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-black">5. قاعدة بيانات العاملين</span>
+              <span className="block text-xs font-black">6. قاعدة بيانات العاملين</span>
               <span className={`text-[10px] block ${subTab === 'database' ? 'text-emerald-200' : 'text-slate-500'}`}>
                 السجل العام والأرقام القومية
               </span>
@@ -1031,7 +1161,300 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* VIEW 3: EMPLOYEE CREDIT PURCHASES (سجل مشتروات العاملين بالآجل) */}
+      {/* VIEW 3: ACTUAL MESS EXPENSES (مصروفات الميس الفعلي وإعاشة العاملين) */}
+      {/* ------------------------------------------------------------- */}
+      {subTab === 'mess_expenses' && (
+        <div className="space-y-5">
+          
+          {/* Header & Quick Action Buttons Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-rose-100 text-rose-800 rounded-xl">
+                  <Utensils className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">
+                    سجل مصروفات الميس الفعلي وإعاشة المزرعة (شهر {state.currentMonth})
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    حصر تحليلي ديناميكي لحساب فرق الميس الفعلي عن المعتمد بدون الذهاب للمكتب الرئيسي
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2 w-full md:w-auto">
+              <button
+                onClick={() => setShowMessModal(true)}
+                className="px-3 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition"
+              >
+                <Utensils className="w-4 h-4" />
+                <span>تسجيل مصروف ميس جديد</span>
+              </button>
+
+              <button
+                onClick={handleExportMessExcel}
+                className="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition"
+                title="تصدير ورقة الميس إلى Excel"
+              >
+                <Download className="w-4 h-4" />
+                <span>تصدير أكسيل (.xlsx)</span>
+              </button>
+
+              <button
+                onClick={handleShareMessWhatsApp}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+                title="مشاركة ملخص الميس عبر واتساب"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>مشاركة واتساب</span>
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+                title="طباعة كشف الميس"
+              >
+                <Printer className="w-4 h-4" />
+                <span>طباعة</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 4 Analytical & Comparison Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            {/* Card 1: Actual Mess Spent */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500">إجمالي المنصرف الفعلي على الميس</p>
+                <h3 className="text-xl font-black text-rose-700 mt-1">
+                  {totalActualMessSpent.toLocaleString('ar-EG')} ج.م
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  منقول آلياً من اليومية ({actualMessEntries.length} حركة)
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-rose-50 text-rose-700 rounded-2xl flex items-center justify-center font-bold">
+                <Utensils className="w-6 h-6" />
+              </div>
+            </div>
+
+            {/* Card 2: Official Mess Budget */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500">الميس الرسمي المعتمد من الشركة</p>
+                <h3 className="text-xl font-black text-emerald-800 mt-1">
+                  {officialMiesBudget.toLocaleString('ar-EG')} ج.م
+                </h3>
+                <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
+                  {regularEmployees.length} أفراد × {state.officialMiesPerPerson || 1000} ج.م / فرد
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-800 rounded-2xl flex items-center justify-center">
+                <Building2 className="w-6 h-6" />
+              </div>
+            </div>
+
+            {/* Card 3: Difference (Deficit vs Surplus) */}
+            <div className={`p-4 rounded-2xl border shadow-sm flex items-center justify-between ${
+              excessMessAmount > 0 
+                ? 'bg-amber-50/70 border-amber-300 text-amber-950' 
+                : 'bg-emerald-50/70 border-emerald-300 text-emerald-950'
+            }`}>
+              <div>
+                <p className="text-[11px] font-bold">
+                  {excessMessAmount > 0 ? 'عجز الميس الفعلي (تجاوز الميزانية)' : 'وفر في ميزانية الميس'}
+                </p>
+                <h3 className={`text-xl font-black mt-1 ${excessMessAmount > 0 ? 'text-amber-800' : 'text-emerald-800'}`}>
+                  {excessMessAmount > 0 
+                    ? `+${excessMessAmount.toLocaleString('ar-EG')} ج.م` 
+                    : `${Math.abs(totalActualMessSpent - officialMiesBudget).toLocaleString('ar-EG')} ج.م`}
+                </h3>
+                <p className="text-[10px] font-bold mt-0.5">
+                  {excessMessAmount > 0 
+                    ? `نصيب الفرد: ${perPersonExcessMess.toLocaleString('ar-EG')} ج.م (يخصم بالمسير الداخلي)` 
+                    : 'ضمن حدود مخصص الشركة'}
+                </p>
+              </div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold ${
+                excessMessAmount > 0 ? 'bg-amber-200 text-amber-900' : 'bg-emerald-200 text-emerald-900'
+              }`}>
+                {excessMessAmount > 0 ? <AlertCircle className="w-6 h-6" /> : <CheckCircle2 className="w-6 h-6" />}
+              </div>
+            </div>
+
+            {/* Card 4: Per Person Actual Food Cost */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500">متوسط تكلفة إعاشة الفرد الفعلية</p>
+                <h3 className="text-xl font-black text-slate-900 mt-1">
+                  {regularEmployees.length > 0 ? Math.round(totalActualMessSpent / regularEmployees.length).toLocaleString('ar-EG') : 0} ج.م
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  لكل عامل منتظم خلال شهر {state.currentMonth}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-slate-100 text-slate-700 rounded-2xl flex items-center justify-center">
+                <Users className="w-6 h-6" />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Regulatory & Accounting Guidance Banner */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl flex items-start gap-2.5 text-amber-900">
+              <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <strong className="block font-black text-[11px]">تنبيه رقابي ومحاسبي:</strong>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  هذا الكشف تحليلي يخص إدارة المزرعة وشئون العاملين لمتابعة تكلفة طعام وإعاشة العاملين الفعلية وتحديد فارق الميس الفعلي عن المعتمد بدقة، <strong>ولا يغني محاسبياً عن دفتر أستاذ الميس لضبط حركة النقدية والعهدة</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl flex items-start gap-2.5 text-slate-800">
+              <Building2 className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <strong className="block font-black text-[11px]">سرية الحسابات والوثائق:</strong>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <strong>لا تذهب هذه الورقة للمكتب الرئيسي</strong> ضمن أوراق تصفية العهدة الـ 5 الرسمية، بل تظل ورقة داخلية موثقة محفوظة بالأرشيف الشامل للمزرعة وجاهزة للمشاركة والطباعة عند الحاجة.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic Mess Expenses Table */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <Utensils className="w-4 h-4 text-rose-700" />
+                <span>بيان تفصيلي بمصروفات ومشتريات الميس المنقولة من اليومية العامة ({actualMessEntries.length} حركة)</span>
+              </h4>
+              <span className="text-[11px] font-mono font-bold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-lg">
+                الإجمالي الفعلي: {totalActualMessSpent.toLocaleString('ar-EG')} ج.م
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                    <th className="p-3 text-center">م</th>
+                    <th className="p-3">التاريخ</th>
+                    <th className="p-3">رقم السند</th>
+                    <th className="p-3">البيان وتفاصيل المشتروات</th>
+                    <th className="p-3 text-center">العدد / الكمية</th>
+                    <th className="p-3 text-center">سعر الوحدة</th>
+                    <th className="p-3 text-center bg-rose-50/50 text-rose-950 font-black">القيمة الإجمالية (ج.م)</th>
+                    <th className="p-3">القائم بالشراء / ملاحظات</th>
+                    <th className="p-3 text-center print:hidden">إجراء</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {actualMessEntries.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="p-10 text-center text-slate-400">
+                        <Utensils className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="font-bold">لا توجد حركات مصروفات ميس مسجلة لشهر {state.currentMonth}.</p>
+                        <p className="text-[11px] mt-1 text-slate-400">
+                          أي قيد في اليومية العامة مصنف كـ "معيشة" أو "ميس" أو يتضمن شراء طعام يظهر هنا آلياً، أو يمكنك إضافته من الزر بالأعلى.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    actualMessEntries.map((entry, idx) => {
+                      const hasQty = entry.quantity && entry.quantity > 0;
+                      const hasUnitPrice = entry.unitPrice && entry.unitPrice > 0;
+                      const displayQty = hasQty ? entry.quantity : '-';
+                      const displayUnitPrice = hasUnitPrice 
+                        ? `${entry.unitPrice!.toLocaleString('ar-EG')} ج.م` 
+                        : (hasQty && entry.amount > 0 ? `${Math.round(entry.amount / entry.quantity!).toLocaleString('ar-EG')} ج.م` : '-');
+
+                      return (
+                        <tr key={entry.id} className="hover:bg-slate-50 transition">
+                          <td className="p-3 text-center font-mono font-bold text-slate-500">{idx + 1}</td>
+                          <td className="p-3 font-mono whitespace-nowrap">{entry.date}</td>
+                          <td className="p-3 font-mono font-bold text-rose-800 whitespace-nowrap">{entry.voucherNo}</td>
+                          <td className="p-3 font-bold text-slate-900">{entry.statement}</td>
+                          <td className="p-3 text-center font-mono font-bold text-slate-700 bg-slate-50/30">
+                            {displayQty}
+                          </td>
+                          <td className="p-3 text-center font-mono text-slate-600 bg-slate-50/30">
+                            {displayUnitPrice}
+                          </td>
+                          <td className="p-3 text-center font-mono font-black text-rose-700 bg-rose-50/60 whitespace-nowrap text-sm">
+                            {entry.amount.toLocaleString('ar-EG')} ج.م
+                          </td>
+                          <td className="p-3 text-slate-600 text-[11px]">
+                            {entry.notes || entry.employeeName || entry.custodian || '-'}
+                          </td>
+                          <td className="p-3 text-center print:hidden">
+                            <button
+                              onClick={() => handleDeleteMessEntry(entry.id)}
+                              title="حذف هذا السند من مصروفات الميس واليومية العامة"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+                {actualMessEntries.length > 0 && (
+                  <tfoot className="border-t-2 border-slate-300">
+                    <tr className="bg-slate-900 text-white font-bold text-xs">
+                      <td colSpan={6} className="p-3 text-left pl-4 font-black">
+                        1. إجمالي المنصرف الفعلي على الميس (Total Actual Mess Expenses):
+                      </td>
+                      <td className="p-3 text-center font-mono font-black text-rose-300 text-sm whitespace-nowrap">
+                        {totalActualMessSpent.toLocaleString('ar-EG')} ج.م
+                      </td>
+                      <td colSpan={2} className="p-3 text-slate-400 text-[10px]">
+                        مجموع الفواتير والمشتريات الفعلية
+                      </td>
+                    </tr>
+                    <tr className="bg-emerald-950 text-emerald-100 font-bold text-xs">
+                      <td colSpan={6} className="p-2.5 text-left pl-4">
+                        2. الميس الرسمي المعتمد من الشركة ({regularEmployees.length} عمال × {state.officialMiesPerPerson || 1000} ج.م):
+                      </td>
+                      <td className="p-2.5 text-center font-mono font-black text-emerald-300 text-sm whitespace-nowrap">
+                        {officialMiesBudget.toLocaleString('ar-EG')} ج.م
+                      </td>
+                      <td colSpan={2} className="p-2.5 text-emerald-400 text-[10px]">
+                        مخصص بند الميس المعتمد بالمكتب
+                      </td>
+                    </tr>
+                    <tr className={`font-black text-xs ${
+                      excessMessAmount > 0 ? 'bg-amber-900 text-amber-100' : 'bg-emerald-900 text-emerald-100'
+                    }`}>
+                      <td colSpan={6} className="p-3 text-left pl-4">
+                        3. الفارق الفعلي للميس ({excessMessAmount > 0 ? 'عجز الميس الواجب خصمه من العمال' : 'وفر في ميزانية الميس'}):
+                      </td>
+                      <td className={`p-3 text-center font-mono text-sm whitespace-nowrap ${
+                        excessMessAmount > 0 ? 'text-amber-300' : 'text-emerald-300'
+                      }`}>
+                        {excessMessAmount > 0 ? `+${excessMessAmount.toLocaleString('ar-EG')} ج.م` : `${Math.abs(totalActualMessSpent - officialMiesBudget).toLocaleString('ar-EG')} ج.م`}
+                      </td>
+                      <td colSpan={2} className="p-3 text-[11px]">
+                        {excessMessAmount > 0 ? `نصيب العامل الواحد: ${perPersonExcessMess.toLocaleString('ar-EG')} ج.م خصم مسير` : 'وفر مالي للمزرعة'}
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* VIEW 4: EMPLOYEE CREDIT PURCHASES (سجل مشتروات العاملين بالآجل) */}
       {/* ------------------------------------------------------------- */}
       {subTab === 'purchases' && (
         <div className="space-y-4">
@@ -1840,6 +2263,165 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ state, setState }) =
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* QUICK MESS EXPENSE MODAL (تسجيل مصروف ميس جديد) */}
+      {/* ------------------------------------------------------------- */}
+      {showMessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="bg-gradient-to-r from-rose-900 to-slate-900 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-rose-800 rounded-xl">
+                  <Utensils className="w-5 h-5 text-rose-200" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">تسجيل قيد مصروف ميس وإعاشة جديد</h3>
+                  <p className="text-[11px] text-slate-300">يُسجل باليومية العامة وينتقل آلياً لكشف الميس وحساب الفارق</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowMessModal(false)}
+                className="text-slate-300 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMessExpense} className="p-5 space-y-4 text-xs">
+              
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">تاريخ الشراء / الصرف</label>
+                <input
+                  type="date"
+                  value={messDate}
+                  onChange={(e) => setMessDate(e.target.value)}
+                  required
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">البيان وتفاصيل المشتروات</label>
+                <input
+                  type="text"
+                  placeholder="مثال: شراء خضار وفاكهة للأسبوع، لحوم وفراخ، تموين وأرز وزيت..."
+                  value={messStatement}
+                  onChange={(e) => setMessStatement(e.target.value)}
+                  required
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 font-bold"
+                />
+              </div>
+
+              {/* Quantity & Unit Price (Optional itemization) */}
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">العدد / الكمية (اختياري)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="مثال: 5"
+                    value={messQuantity || ''}
+                    onChange={(e) => {
+                      const q = Number(e.target.value);
+                      setMessQuantity(q);
+                      if (messUnitPrice > 0) {
+                        setMessAmount(String(q * messUnitPrice));
+                      }
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">سعر الوحدة (اختياري)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="مثال: 70"
+                    value={messUnitPrice || ''}
+                    onChange={(e) => {
+                      const p = Number(e.target.value);
+                      setMessUnitPrice(p);
+                      if (messQuantity > 0) {
+                        setMessAmount(String(messQuantity * p));
+                      }
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Total Amount Input */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  القيمة الإجمالية للمصروف (ج.م) <span className="text-rose-600">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    placeholder="المبلغ الإجمالي بالجنيه..."
+                    value={messAmount}
+                    onChange={(e) => setMessAmount(e.target.value)}
+                    required
+                    className="w-full bg-rose-50/50 border-2 border-rose-300 rounded-lg p-2.5 font-mono font-black text-rose-800 text-sm focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  💡 مرونة تامة: إذا كانت الفاتورة مجمعة بدون تفصيل عدد وسعر، يمكنك كتابة المبلغ الإجمالي هنا مباشرة دون إدخال العدد أو السعر.
+                </p>
+              </div>
+
+              {/* Buyer / Notes */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">القائم بالشراء / ملاحظات الفاتورة</label>
+                <input
+                  type="text"
+                  placeholder="مثال: شراء م. أحمد، فاتورة ماركت الأمانة رقم 5410..."
+                  value={messNotes}
+                  onChange={(e) => setMessNotes(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">طريقة السداد / الخزينة</label>
+                <select
+                  value={messPaymentMethod}
+                  onChange={(e) => setMessPaymentMethod(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 font-bold"
+                >
+                  <option value="نقداً من العهدة النقدية">نقداً من العهدة النقدية</option>
+                  <option value="تحويل بنكي direct bank">تحويل بنكي direct bank</option>
+                  <option value="نقداً من الخزينة الرئيسية">نقداً من الخزينة الرئيسية</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowMessModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-bold shadow"
+                >
+                  حفظ وتسجيل المصروف
+                </button>
+              </div>
+
+            </form>
           </div>
         </div>
       )}
