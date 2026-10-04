@@ -205,11 +205,18 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
             </div>
 
             <button
-              onClick={() => exportOfficialOfficeExcel(state)}
+              onClick={async () => {
+                try {
+                  await exportOfficialOfficeExcel(state);
+                } catch (e) {
+                  console.error(e);
+                  alert('حدث خطأ أثناء تنزيل الملف، يرجى المحاولة مرة أخرى.');
+                }
+              }}
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition"
             >
               <Download className="w-4 h-4" />
-              <span>تحميل ملف المكتب الرئيسي (5 ورقات)</span>
+              <span>تحميل ملف المكتب الرئيسي (5 ورقات منسقة)</span>
             </button>
           </div>
 
@@ -236,11 +243,18 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({ state, setStat
             </div>
 
             <button
-              onClick={() => exportFullFarmBackupExcel(state)}
+              onClick={async () => {
+                try {
+                  await exportFullFarmBackupExcel(state);
+                } catch (e) {
+                  console.error(e);
+                  alert('حدث خطأ أثناء تنزيل الملف، يرجى المحاولة مرة أخرى.');
+                }
+              }}
               className="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition"
             >
               <Download className="w-4 h-4" />
-              <span>تحميل الأرشيف الداخلي الشامل</span>
+              <span>تحميل الأرشيف الداخلي الشامل (منسق)</span>
             </button>
           </div>
 

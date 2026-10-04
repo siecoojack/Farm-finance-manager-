@@ -25,16 +25,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ state, onClose }) => {
     '2026-07', '2026-06', '2026-05', '2026-04', '2026-03', '2026-02', '2026-01'
   ];
 
-  const handleExportOffice = () => {
-    exportOfficialOfficeExcel({ ...state, currentMonth: selectedMonth });
-    setDownloadSuccessMsg(`تم بنجاح تنزيل ملف المكتب الرئيسي لشهر (${selectedMonth}) بالـ 5 ورقات الرسمية!`);
-    setTimeout(() => setDownloadSuccessMsg(null), 4000);
+  const handleExportOffice = async () => {
+    try {
+      await exportOfficialOfficeExcel({ ...state, currentMonth: selectedMonth });
+      setDownloadSuccessMsg(`تم بنجاح تنزيل ملف المكتب الرئيسي المنسق بالألوان لشهر (${selectedMonth}) بالـ 5 ورقات الرسمية!`);
+      setTimeout(() => setDownloadSuccessMsg(null), 4000);
+    } catch (e) {
+      console.error(e);
+      alert('حدث خطأ أثناء تنزيل الملف، يرجى المحاولة مرة أخرى.');
+    }
   };
 
-  const handleExportBackup = () => {
-    exportFullFarmBackupExcel({ ...state, currentMonth: selectedMonth });
-    setDownloadSuccessMsg(`تم بنجاح تنزيل الأرشيف الداخلي الكامل لشهر (${selectedMonth})!`);
-    setTimeout(() => setDownloadSuccessMsg(null), 4000);
+  const handleExportBackup = async () => {
+    try {
+      await exportFullFarmBackupExcel({ ...state, currentMonth: selectedMonth });
+      setDownloadSuccessMsg(`تم بنجاح تنزيل الأرشيف الداخلي الكامل المنسق لشهر (${selectedMonth})!`);
+      setTimeout(() => setDownloadSuccessMsg(null), 4000);
+    } catch (e) {
+      console.error(e);
+      alert('حدث خطأ أثناء تنزيل الملف، يرجى المحاولة مرة أخرى.');
+    }
   };
 
   return (
