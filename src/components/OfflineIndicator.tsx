@@ -1,6 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { WifiOff, X } from 'lucide-react';
 
+/**
+ * Hook to track browser online/offline status
+ */
+export function useOnlineStatus() {
+  const [isOnline, setIsOnline] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  });
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+}
+
+/**
+ * The yellow/amber floating toast indicator
+ * Starts fading out after 8.5 seconds and completely hides after 10 seconds.
+ */
 export const OfflineIndicator: React.FC = () => {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -18,12 +46,12 @@ export const OfflineIndicator: React.FC = () => {
       clearTimeout(fadeTimer);
       clearTimeout(hideTimer);
 
-      // Start fade-out after 8.5 seconds
+      // Start fade-out animation after 8.5 seconds
       fadeTimer = setTimeout(() => {
         setIsFading(true);
       }, 8500);
 
-      // Fully hide after 10 seconds
+      // Completely remove and hide after 10 seconds
       hideTimer = setTimeout(() => {
         setIsVisible(false);
       }, 10000);
@@ -40,8 +68,8 @@ export const OfflineIndicator: React.FC = () => {
       startDismissTimer();
     };
 
-    // If starting in offline mode
-    if (!navigator.onLine) {
+    // If starting the app in offline mode
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       startDismissTimer();
     }
 

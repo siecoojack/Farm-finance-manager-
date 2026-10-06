@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Layers, Plus, Trash2, Shield, Settings, CheckCircle2, X } from 'lucide-react';
+import { Layers, Plus, Trash2, Shield, Settings, CheckCircle2, X, Wifi, WifiOff, Smartphone, RefreshCw } from 'lucide-react';
 import { AppState, DropdownOption } from '../../types';
+import { useOnlineStatus } from '../OfflineIndicator';
 
 interface SettingsTabProps {
   state: AppState;
@@ -8,6 +9,10 @@ interface SettingsTabProps {
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => {
+  const isOnline = useOnlineStatus();
+  const [cacheUpdating, setCacheUpdating] = useState(false);
+  const [cacheSuccess, setCacheSuccess] = useState(false);
+
   // Dropdown Form State
   const [showDropdownForm, setShowDropdownForm] = useState(false);
   const [drpType, setDrpType] = useState<DropdownOption['type']>('category');
@@ -74,8 +79,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
           </button>
         </div>
 
-        {/* Min Petty Cash Limit & Mies */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Min Petty Cash Limit & Mies & Offline Status */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-emerald-800" />
@@ -106,6 +111,58 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ state, setState }) => 
                 className="bg-white border border-slate-300 rounded-lg p-2 font-bold text-slate-800 w-32"
               />
             </div>
+          </div>
+
+          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-emerald-800" />
+                  <h4 className="font-bold text-slate-900">وضع عدم الاتصال (PWA)</h4>
+                </div>
+                {isOnline ? (
+                  <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-emerald-300">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                    متصل
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 bg-amber-200 text-amber-900 text-[11px] font-bold px-2 py-0.5 rounded-full border border-amber-400 animate-pulse">
+                    <WifiOff className="w-3 h-3" />
+                    أوفلاين
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed mb-3">
+                التطبيق مؤهل للعمل الميداني بدون إنترنت وحفظ كافة القيود والبيانات محلياً على جهازك.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setCacheUpdating(true);
+                if ('serviceWorker' in navigator) {
+                  try {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of regs) {
+                      await reg.update();
+                    }
+                  } catch (e) {
+                    console.log(e);
+                  }
+                }
+                setTimeout(() => {
+                  setCacheUpdating(false);
+                  setCacheSuccess(true);
+                  setTimeout(() => setCacheSuccess(false), 3000);
+                }, 1000);
+              }}
+              disabled={cacheUpdating}
+              className="w-full bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${cacheUpdating ? 'animate-spin' : ''}`} />
+              <span>{cacheSuccess ? 'تم تحديث التخزين المؤقت بنجاح!' : cacheUpdating ? 'جاري التحديث...' : 'تحديث ملفات التخزين المحلي (Offline Cache)'}</span>
+            </button>
           </div>
         </div>
 
