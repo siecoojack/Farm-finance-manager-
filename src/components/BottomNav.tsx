@@ -291,8 +291,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           <div className="flex items-center gap-0.5 shrink-0 pr-1 border-r border-slate-800">
             {!isOnline && (
               <div 
-                className="p-1 text-amber-400 bg-amber-950/80 border border-amber-500/50 rounded-lg flex flex-col items-center animate-pulse"
-                title="أنت في وضع عدم الاتصال"
+                className="p-1 text-amber-400 bg-amber-950/60 border border-amber-500/40 rounded-lg flex flex-col items-center"
+                title="أنت في وضع عدم الاتصال (أوفلاين)"
               >
                 <WifiOff className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-[7px] font-bold text-amber-300 leading-none mt-0.5">أوفلاين</span>

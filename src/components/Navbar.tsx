@@ -18,13 +18,9 @@ import {
   Minimize2,
   Package,
   CreditCard,
-  ShoppingCart,
-  WifiOff,
-  Wifi
+  ShoppingCart
 } from 'lucide-react';
 import { AppState } from '../types';
-import { useOnlineStatus } from './OfflineIndicator';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   state: AppState;
@@ -41,7 +37,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenShare,
   onPrint
 }) => {
-  const isOnline = useOnlineStatus();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -171,33 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 );
               })()}
-
-              {/* Online / Offline Connectivity Status Badge */}
-              <div className="flex items-center">
-                {isOnline ? (
-                  <div 
-                    className="flex items-center gap-1.5 bg-emerald-950/70 border border-emerald-700/80 text-emerald-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold select-none"
-                    title="متصل بالإنترنت - التخزين المحلي والعمل الميداني مؤمّن"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="hidden sm:inline">متصل</span>
-                  </div>
-                ) : (
-                  <div 
-                    className="flex items-center gap-1.5 bg-amber-500 text-slate-950 border border-amber-300 px-3 py-1.5 rounded-lg text-xs font-black animate-pulse shadow-md select-none"
-                    title="أنت الآن في وضع عدم الاتصال (أوفلاين) - جميع عملياتك تُحفظ في ذاكرة جهازك فوراً"
-                  >
-                    <WifiOff className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-                    <span>وضع عدم الاتصال (أوفلاين)</span>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5">
-              <PWAInstallButton />
-
               <button
                 onClick={toggleFullscreen}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
